@@ -17,10 +17,11 @@ async def check_status():
         if stat[9] != 'Completed' and stat[9] != 'Canceled' and stat[9] != 'Завершен':
             NameProduct = await db.GetProductName(stat[2])
             Service = await db.GetServiceCategory(NameProduct[1])
+            key_smm = os.getenv('KEYSMMPANEL')
             if Service == 'SmmPanel':
                 url = 'https://smmpanel.ru/api/v1'
                 data = {
-                    'key': '6qkjaI5Wb8OsDzrQDagYNPtpbJNdtpGe',
+                    'key': key_smm,
                     'action': 'status',
                     'order': stat[8]
                 }
@@ -32,10 +33,12 @@ async def check_status():
                     await db.UpdateOrderStatus(Order_id, Status)
                     await bot.send_message(stat[1], f'Статус заказа номер {stat[8]} изменен на {Status}')
             else:
+                user_id_smo = os.getenv('USERIDSMOSERVICE')
+                key_smo = os.getenv('KEYSMOSERVICE')
                 url = 'https://smoservice.media/api/'
                 data = {
-                    'user_id': '419104',
-                    'api_key': 'DBF53938E4AEA142A34548ACA761228B',
+                    'user_id': user_id_smo,
+                    'api_key': key_smo,
                     'action': 'check_order',
                     'order_id': stat[8]
                 }

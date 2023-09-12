@@ -189,9 +189,10 @@ async def get_product(message: Message, state: FSMContext):
 
 
 async def OrderSmmPanel(Url, ServiceId, UserId, Sum):
+    key_smm = os.getenv('KEYSMMPANEL')
     url = 'https://smmpanel.ru/api/v1'
     data = {
-        'key': '6qkjaI5Wb8OsDzrQDagYNPtpbJNdtpGe',
+        'key': key_smm,
         'action': 'add',
         'service': ServiceId,
         'link': Url,
@@ -209,11 +210,12 @@ async def OrderSmmPanel(Url, ServiceId, UserId, Sum):
 
 
 async def OrderSmoService(Url, ServiceId, UserId, Sum):
-    print(ServiceId[0])
+    user_id_smo = os.getenv('USERIDSMOSERVICE')
+    key_smo = os.getenv('KEYSMOSERVICE')
     url = 'https://smoservice.media/api/'
     data = {
-        'user_id': '419104',
-        'api_key': 'DBF53938E4AEA142A34548ACA761228B',
+        'user_id': user_id_smo,
+        'api_key': key_smo,
         'action': 'create_order',
         'service_id': ServiceId[0],
         'count': Quantity,

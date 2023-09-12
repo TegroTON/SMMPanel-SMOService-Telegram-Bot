@@ -1,3 +1,4 @@
+import os
 import json
 import requests
 from aiogram.types import Message
@@ -24,9 +25,10 @@ async def SendAll(message: Message, state: FSMContext):
 
 async def ParsingSmmPanel():
     # Запрос к SMMPanel для парсинга
+    key_smm = os.getenv('KEYSMMPANEL')
     url = 'https://smmpanel.ru/api/v1'
     data = {
-        'key': '6qkjaI5Wb8OsDzrQDagYNPtpbJNdtpGe',
+        'key': key_smm,
         'action': 'services'
     }
     response = requests.post(url, data=data)
@@ -55,10 +57,12 @@ async def ParsingSmmPanel():
 
 
 async def ParsingSmoService():
+    user_id_smo = os.getenv('USERIDSMOSERVICE')
+    key_smo = os.getenv('KEYSMOSERVICE')
     url = 'https://smoservice.media/api/'
     data = {
-        'user_id': '419104',
-        'api_key': 'DBF53938E4AEA142A34548ACA761228B',
+        'user_id': user_id_smo,
+        'api_key': key_smo,
         'action': 'services'
     }
     response = requests.post(url, data=data)
