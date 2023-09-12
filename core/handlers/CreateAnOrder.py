@@ -15,6 +15,7 @@ import requests
 import json
 import time
 import hmac
+from core.handlers import Balance
 import hashlib
 import uuid
 from aiogram import Bot, Router
@@ -54,9 +55,12 @@ async def CreateAnOrder(message: Message):
 # После выбора категории обрабатываем выбранную строку
 @OrderRouter.callback_query(F.data.startswith("buy_category"))
 async def NameCategory(callback: CallbackQuery):
+    global Service
     # Получаем id категории товара
     ParentId = int(callback.data[13:])
     # Вывод все товара у кого id категории равен этой
+    Service = await db.GetServiceCategory(ParentId)
+    print(Service)
     SubCategroy = await db.GetSubCategory(ParentId)
     if SubCategroy is None:
         await callback.message.answer('Выберите товар', reply_markup=await Button.CheckProduct('buy', ParentId))
@@ -70,6 +74,7 @@ async def buy_subcategory(callback: CallbackQuery):
     global Service
     ParentId = int(callback.data[16:])
     Service = await db.GetServiceCategory(ParentId)
+    print(Service)
     await callback.message.answer('Выберите товар', reply_markup=await Button.CheckProduct('buy', ParentId))
     await callback.message.delete()
 
@@ -151,9 +156,8 @@ async def get_product(message: Message, state: FSMContext):
             data_string = urlencode(sorted_data)
             sign = hashlib.md5((data_string + str(os.getenv('SECRETKEY'))).encode()).hexdigest()
             PayUrl = f'https://tegro.money/pay/?{data_string}&sign={sign}'
-            await message.answer(f'Недостаточно средств на балансе. Перейдите по ссылке для пополнения на {Sum} RUB:',
-                                 reply_markup=await Button.TegroPay(PayUrl))
-            await message.answer('Проверить оплату', reply_markup=Button.CheckTrans)
+            await message.answer(f'Недостаточно средств на балансе. Пополните баланс ниже на {sum}')
+            await Balance.MyBalance(message, state)
         else:
             # Если денег хватает, то отправляем заказ в SMMPanel
             await db.WriteOffTheBalance(UserId, Sum)
@@ -171,7 +175,7 @@ async def get_product(message: Message, state: FSMContext):
             if Service == 'SmmPanel':
                 res = await OrderSmmPanel(Url, ServiceId, UserId, Sum)
                 await message.answer(res)
-            else:
+            elif Service == 'SmoService':
                 res = await OrderSmoService(Url, ServiceId, UserId, Sum)
                 await message.answer(res)
         await state.clear()
@@ -182,39 +186,6 @@ async def get_product(message: Message, state: FSMContext):
                              '\n'
                              'Попробуйте создать заказ заново\n')
 
-
-# Проверяем оплату от пользователя
-@OrderRouter.callback_query(F.data == 'check_trans')
-async def CheckPay(callback: CallbackQuery, state: FSMContext):
-    # Делаем запрос в Tegro
-    api_key = 'D3xYTmMfdDGlPA3I'
-    data = {
-        'shop_id': str('3FF517A8EF30E24571BDAD4181F24FD0'),
-        'nonce': int(time.time()),
-        'payment_id': str(order_id)
-    }
-    body = json.dumps(data)
-    sign = hmac.new(api_key.encode(), body.encode(), hashlib.sha256).hexdigest()
-
-    headers = {
-        'Authorization': f'Bearer {sign}',
-        'Content-Type': 'application/json',
-    }
-    url = "https://tegro.money/api/order/"
-    response = requests.post(url, data=body, headers=headers)
-    textdata = json.loads(response.text)
-    datastatus = textdata['data']
-    # Обрабатываем заказа проверяя все возможные статусы
-    if not datastatus:
-        await callback.message.answer('Транзакции не существует')
-    else:
-        status = datastatus['status']
-        if status == 1:
-            await db.UpdateBalance(callback.from_user.id, sum)
-            await callback.message.answer('Оплата успешно прошла')
-            await callback.message.delete()
-        else:
-            await callback.message.answer('Оплата не прошла')
 
 
 async def OrderSmmPanel(Url, ServiceId, UserId, Sum):
@@ -232,7 +203,9 @@ async def OrderSmmPanel(Url, ServiceId, UserId, Sum):
     Order_Id = (OrderData['order'])
     # Добавляем в бд все данные о заказе
     res = await db.AddOrders(UserId, ProductId, Quantity, Sum, ServiceId[0], Url, Order_Id, Status)
-    return res
+    text = f'Заказ номер {Order_Id} получен.\n' \
+           f'Статус заказа в обработке'
+    return text
 
 
 async def OrderSmoService(Url, ServiceId, UserId, Sum):
@@ -252,4 +225,6 @@ async def OrderSmoService(Url, ServiceId, UserId, Sum):
     Order_Id = (OrderData['data']['order_id'])
     # Добавляем в бд все данные о заказе
     res = await db.AddOrders(UserId, ProductId, Quantity, Sum, ServiceId[0], Url, Order_Id, Status)
-    return res
+    text = f'Заказ номер {Order_Id} получен.\n' \
+           f'Статус заказа в обработке'
+    return text

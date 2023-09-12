@@ -8,6 +8,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram import F
 from core.keyboards import Button
 from core.config import config
+from http.server import BaseHTTPRequestHandler
 import database as db
 from urllib.parse import urlencode
 import uuid
@@ -28,6 +29,7 @@ BalanceRouter = Router()
 # Создаем FSM
 class FSMFillFrom(StatesGroup):
     ReplenishBalance = State()
+    GetPay = State()
 
 
 # Обработка команды
@@ -43,9 +45,16 @@ async def MyBalance(message: Message, state: FSMContext):
     # Получаем баланс из бд с помощью id
     balance = await db.GetBalance(message.from_user.id)
     text = f'Ваш баланс: {balance[0]} руб.\n' \
-           '💳 Вы можете пополнить баланс, указав сумму пополнения в рублях:'
+           '💳 Выберите действие ниже:'
     # Используем FSM
-    await message.answer(text)
+    await message.answer(text, reply_markup=Button.BalanceKeyboard)
+    await state.set_state(FSMFillFrom.ReplenishBalance)
+
+
+@BalanceRouter.callback_query(F.data == 'replenish_balance')
+async def replenish_balance(callback: CallbackQuery, state: FSMContext):
+    await callback.message.delete()
+    await callback.message.answer('💳 Введите сумму пополнения ниже')
     await state.set_state(FSMFillFrom.ReplenishBalance)
 
 
@@ -60,7 +69,6 @@ async def ReplenishBalance(message: Message, state: FSMContext):
         global order_id, user_id
         order_id = uuid.uuid4()
         user_id = message.from_user.id
-        print(order_id)
         data = {
             'shop_id': Shopped,
             'amount': Sum,
@@ -73,45 +81,22 @@ async def ReplenishBalance(message: Message, state: FSMContext):
         sign = hashlib.md5((data_string + SecretKey).encode()).hexdigest()
         PayUrl = f'https://tegro.money/pay/?{data_string}&sign={sign}'
         await message.answer('Выберите способ оплаты', reply_markup=await Button.TegroPay(PayUrl))
-        await message.answer('Проверить оплату', reply_markup=Button.CheckPay)
-        await message.answer('Если хотите отменить нажмите на кнопку в меню⤵️ ', reply_markup=Button.BackMainKeyboard)
+        #await message.answer('Проверить оплату', reply_markup=Button.CheckPay)
+        #await message.answer('Если хотите отменить нажмите на кнопку в меню⤵️ ', reply_markup=Button.BackMainKeyboard)
     else:
         await state.clear()
 
 
-# Обработка кнопки для проверки оплаты
-@BalanceRouter.callback_query(F.data == 'check_pay')
-async def CheckPay(callback: CallbackQuery, state: FSMContext):
-    # Создаем запрос на Tegro для проверки прошла ли оплата
-    api_key = 'D3xYTmMfdDGlPA3I'
-    data = {
-        'shop_id': str('3FF517A8EF30E24571BDAD4181F24FD0'),
-        'nonce': int(time.time()),
-        'payment_id': str(order_id)
-    }
-    body = json.dumps(data)
-    sign = hmac.new(api_key.encode(), body.encode(), hashlib.sha256).hexdigest()
+async def tegro_success(request):
+    param = request.query.get('order_id')
+    param2 = request.query.get('status')
+    bot = Bot(token=os.getenv('TOKEN'))
+    if param2 == 'success':
+        print('пришло')
+        await db.UpdateBalance(user_id, Sum)
+        await bot.send_message(chat_id=user_id, text='оплата прошла успешно', reply_markup=Button.ReplyStartKeyboard)
 
-    headers = {
-        'Authorization': f'Bearer {sign}',
-        'Content-Type': 'application/json',
-    }
 
-    url = "https://tegro.money/api/order/"
-    response = requests.post(url, data=body, headers=headers)
-
-    # Проверяем ответ от Tegro
-    textdata = json.loads(response.text)
-    status = textdata['data']
-    # Если вернули 0, то оплата не прошла
-    if not status:
-        await callback.message.answer('Транзакции не существует')
-    # Если строка не пустая, то проверяем статус
-    else:
-        status = status['status']
-        if status == 1:
-            await db.UpdateBalance(user_id, Sum)
-            await callback.message.answer('Оплата успешно прошла')
-            await callback.message.delete()
-        else:
-            await callback.message.answer('Оплата не прошла')
+async def tegro_fail(request):
+    bot = Bot(token=os.getenv('TOKEN'))
+    await bot.send_message(user_id, 'оплата не прошла', reply_markup=Button.ReplyStartKeyboard)

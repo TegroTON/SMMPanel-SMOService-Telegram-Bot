@@ -27,8 +27,9 @@ def is_bot_token(value: str) -> Union[bool, Dict[str, Any]]:
     return True
 
 
-@NewBotRouter.message(F.text == 'Боты')
+@NewBotRouter.message(F.text == '🤖Мои Боты')
 async def command_add_bot(message: Message, state: FSMContext, bot: Bot) -> Any:
+    await state.clear()
     Text = '1️⃣Перейдите к @BotFather. Для этого нажмите на его имя, \n' \
            'а потом "Send Message", если это потребуется.\n' \
            '2️⃣Создайте нового бота у него. Для этого внутри @BotFather\n' \

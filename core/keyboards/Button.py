@@ -20,10 +20,11 @@ StartKeyboard = [
         KeyboardButton(text='🧾Чеки'),
     ],
     [
-        KeyboardButton(text='Боты'),
+        KeyboardButton(text='🤖Мои Боты'),
     ]
 ]
 ReplyStartKeyboard = ReplyKeyboardMarkup(keyboard=StartKeyboard, resize_keyboard=True)
+
 
 AdminMainKeyboard = [
     [
@@ -42,13 +43,14 @@ AdminMainKeyboard = [
         KeyboardButton(text='🧾Чеки'),
     ],
     [
-        KeyboardButton(text='Боты'),
+        KeyboardButton(text='🤖Мои Боты'),
     ],
     [
         KeyboardButton(text='Админ-панель')
     ],
 ]
 ReplyAdminMainKeyboard = ReplyKeyboardMarkup(keyboard=AdminMainKeyboard, resize_keyboard=True)
+
 
 AdminPanelKeyboard = [
     [
@@ -71,6 +73,7 @@ AdminPanelKeyboard = [
     ]
 ]
 ReplyAdminPanelKeyboard = ReplyKeyboardMarkup(keyboard=AdminPanelKeyboard, resize_keyboard=True)
+
 
 BackMainButton = [
     [
@@ -102,10 +105,11 @@ AddOrRemoveCategoryButton = [
         InlineKeyboardButton(text='Удалить', callback_data='RemoveCategorySubCategory')
     ],
     [
-        InlineKeyboardButton(text='Назад', callback_data='BackToMainMenuAdmin')
+        InlineKeyboardButton(text='⬅️Назад', callback_data='BackToMainMenuAdmin')
     ]
 ]
 AddOrRemoveCategoryKeyboard = InlineKeyboardMarkup(inline_keyboard=AddOrRemoveCategoryButton)
+
 
 RemoveCategoryOrSubCategoryButton = [
     [
@@ -114,6 +118,7 @@ RemoveCategoryOrSubCategoryButton = [
     ]
 ]
 RemoveCategoryOrSubCategory = InlineKeyboardMarkup(inline_keyboard=RemoveCategoryOrSubCategoryButton)
+
 
 AddSubCategoryButton = [
     [
@@ -127,6 +132,7 @@ AddSubCategoryButton = [
     ]
 ]
 AddSubCategoryKeyboard = InlineKeyboardMarkup(inline_keyboard=AddSubCategoryButton)
+
 
 AddProductToCategoryOrSubCategoryButton = [
     [
@@ -144,21 +150,24 @@ AddProductToCategoryOrSubCategoryButton = [
 ]
 AddProductToCategoryOrSubCategory = InlineKeyboardMarkup(inline_keyboard=AddProductToCategoryOrSubCategoryButton)
 
-CheckPayButton = [
+
+Balance = [
     [
-        InlineKeyboardButton(text='Проверить оплату',
-                             callback_data='check_pay')
+        InlineKeyboardButton(text='📥Пополнить', callback_data='replenish_balance'),
+        InlineKeyboardButton(text='📨История операций', callback_data='history_balance')
     ]
 ]
-CheckPay = InlineKeyboardMarkup(inline_keyboard=CheckPayButton)
+BalanceKeyboard = InlineKeyboardMarkup(inline_keyboard=Balance)
+
 
 CheckTransButton = [
     [
         InlineKeyboardButton(text='Проверить оплату',
-                             callback_data='check_trans')
+                             callback_data='checkTrans')
     ]
 ]
 CheckTrans = InlineKeyboardMarkup(inline_keyboard=CheckTransButton)
+
 
 NextOrderListButtonAdmin = [
     [
@@ -175,6 +184,7 @@ NextOrderListButtonAdmin = [
 ]
 NextOrdersListAdmin = InlineKeyboardMarkup(inline_keyboard=NextOrderListButtonAdmin)
 
+
 BackOrdersButtonAdmin = [
     [
         InlineKeyboardButton(text='⬅️ Назад',
@@ -189,6 +199,7 @@ BackOrdersButtonAdmin = [
     ],
 ]
 BackOrdersListAdmin = InlineKeyboardMarkup(inline_keyboard=BackOrdersButtonAdmin)
+
 
 OnlyNextOrdersButtonAdmin = [
     [
@@ -205,6 +216,7 @@ OnlyNextOrdersButtonAdmin = [
 ]
 OnlyNextOrdersListAdmin = InlineKeyboardMarkup(inline_keyboard=OnlyNextOrdersButtonAdmin)
 
+
 NextOrderListButton = [
     [
         InlineKeyboardButton(text='⬅️Назад', callback_data='BackOrderList'),
@@ -213,6 +225,7 @@ NextOrderListButton = [
 ]
 NextOrdersList = InlineKeyboardMarkup(inline_keyboard=NextOrderListButton)
 
+
 BackOrdersButton = [
     [
         InlineKeyboardButton(text='⬅️ Назад',
@@ -220,6 +233,7 @@ BackOrdersButton = [
     ]
 ]
 BackOrdersList = InlineKeyboardMarkup(inline_keyboard=BackOrdersButton)
+
 
 NextOrdersButton = [
     [

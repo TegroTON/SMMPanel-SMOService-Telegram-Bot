@@ -30,7 +30,6 @@ async def MyOrderAdmin(message: Message, bot: Bot, SearchId=None, SearchLink=Non
         OrderList = SearchId
     elif SearchName is not None:
         OrderList = SearchName
-    print(len(OrderList))
     text = ''
     # Проверяем что список больше 0
     if len(OrderList) > 0:
@@ -39,17 +38,7 @@ async def MyOrderAdmin(message: Message, bot: Bot, SearchId=None, SearchLink=Non
             # Перебираем все заказы пользователя и обновляем статусы
             for order in OrderList:
                 NameProduct = await db.GetProductName(order[2])
-                url = 'https://smmpanel.ru/api/v1'
-                data = {
-                    'key': '6qkjaI5Wb8OsDzrQDagYNPtpbJNdtpGe',
-                    'action': 'status',
-                    'order': order[8]
-                }
-                response = requests.post(url, data=data)
-                OrderData = json.loads(response.text)
-                Status = (OrderData['status'])
-                Order_id = (OrderData['order'])
-                await db.UpdateOrderStatus(Order_id, Status)
+                Status = order[9]
                 # Проверяем все возможные статусы
                 if Status == 'Pending':
                     text += f'🆕В ожидании {NameProduct} {order[4]}шт {order[5]}RUB\n'
@@ -72,17 +61,7 @@ async def MyOrderAdmin(message: Message, bot: Bot, SearchId=None, SearchLink=Non
             for a in range(MinOrdersList, MaxOrdersList):
                 if a < len(OrderList):
                     NameProduct = 'sdasdasd' #await db.GetProductName(OrderList[a][2])
-                    url = 'https://smmpanel.ru/api/v1'
-                    data = {
-                        'key': '6qkjaI5Wb8OsDzrQDagYNPtpbJNdtpGe',
-                        'action': 'status',
-                        'order': OrderList[a][8]
-                    }
-                    response = requests.post(url, data=data)
-                    OrderData = json.loads(response.text)
-                    Status = (OrderData['status'])
-                    Order_id = (OrderData['order'])
-                    await db.UpdateOrderStatus(Order_id, Status)
+                    Status = OrderList[a][9]
                     if Status == 'Pending':
                         text += f'🆕В ожидании {NameProduct} {OrderList[a][4]}шт {OrderList[a][5]}RUB\n'
                     elif Status == 'In progress':

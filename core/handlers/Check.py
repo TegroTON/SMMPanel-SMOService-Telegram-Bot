@@ -18,6 +18,7 @@ ActivateQuantity = 1
 CheckId = 0
 global LinkCheckId
 global RealCheckId
+MaxQuantity = 0
 
 CheckRouter = Router()
 
@@ -34,6 +35,18 @@ class FSMFillFrom(StatesGroup):
 async def Check(message: Message):
     await message.answer(TextUser.TextAddCheck, reply_markup=Button.CheckPersonOrMultiKeyboard,
                          parse_mode=ParseMode.HTML)
+
+
+@CheckRouter.message(F.text == 'Назад')
+async def CheckPay(message: Message, state: FSMContext):
+    # Останавливаем FSM
+    await state.clear()
+    await message.delete()
+    # Проверяем является ли пользователь админом
+    if message.from_user.id == int(os.getenv('ADMIN_ID')):
+        await message.answer('Вы попали в админ-панель', reply_markup=Button.ReplyAdminMainKeyboard)
+    else:
+        await message.answer('Выберите в меню ниже интересующий Ваc раздел:', reply_markup=Button.ReplyStartKeyboard)
 
 
 @CheckRouter.callback_query(F.data == 'personal_check')
@@ -192,23 +205,27 @@ async def GenerateCheckMulti(callback: CallbackQuery, state: FSMContext):
 
 @CheckRouter.message(FSMFillFrom.GetPriceForMultiCheck)
 async def GetPriceForMultiCheck(message: Message, state: FSMContext):
-    global Sum
+    global Sum, MaxQuantity
+    Balance = await db.GetBalance(message.from_user.id)
     Sum = message.text
     if int(Sum) >= 10:
-        Balance = await db.GetBalance(message.from_user.id)
-        MaxQuantity = int(int(Balance[0]) / int(Sum))
-        TextForUserCreateCheck = "🧾<b>Мульти-чек</b>\n" \
-                                 "\n" \
-                                 "Сколько пользователей смогут активировать этот чек?\n" \
-                                 "\n" \
-                                 f"<b>Одна активация:</b> {message.text}\n" \
-                                 f"\n" \
-                                 f"Максимум активаций с вашим балансом: {MaxQuantity}\n" \
-                                 f"\n" \
-                                 f"<b>Введите количество активаций:</b>"
-        await message.answer(TextForUserCreateCheck, reply_markup=Button.BackMainKeyboard,
-                             parse_mode=ParseMode.HTML)
-        await state.set_state(FSMFillFrom.GetActivate)
+        if Balance[0] >= int(Sum):
+            Balance = await db.GetBalance(message.from_user.id)
+            MaxQuantity = int(int(Balance[0]) / int(Sum))
+            TextForUserCreateCheck = "🧾<b>Мульти-чек</b>\n" \
+                                     "\n" \
+                                     "Сколько пользователей смогут активировать этот чек?\n" \
+                                     "\n" \
+                                     f"<b>Одна активация:</b> {message.text}\n" \
+                                     f"\n" \
+                                     f"Максимум активаций с вашим балансом: {MaxQuantity}\n" \
+                                     f"\n" \
+                                     f"<b>Введите количество активаций:</b>"
+            await message.answer(TextForUserCreateCheck, reply_markup=Button.BackMainKeyboard,
+                                 parse_mode=ParseMode.HTML)
+            await state.set_state(FSMFillFrom.GetActivate)
+        else:
+            await message.answer('Сумма вашего баланса меньше чем сумма чека')
     else:
         await message.answer('Введите стоимость одного чека больше 10')
 
@@ -216,16 +233,18 @@ async def GetPriceForMultiCheck(message: Message, state: FSMContext):
 @CheckRouter.message(FSMFillFrom.GetActivate)
 async def GetActivate(message: Message, state: FSMContext):
     global ActivateQuantity
-    ActivateQuantity = int(message.text)
-    TextForMultiCheck = "🧾<b>Мульти-чек</b>\n" \
-                        "\n" \
-                        f"<b>Сумма чека: {Sum}</b>\n" \
-                        f"\n" \
-                        f"<b>Внутри чека:</b> 10 активация(й) по {Sum} рублей\n" \
-                        f"\n" \
-                        f"<b>🔸 Пожалуйста, подтвердите корректность данных:</b>"
-    await message.answer(TextForMultiCheck, reply_markup=await Button.ConfirmCheck('multi'), parse_mode=ParseMode.HTML)
-
+    if int(message.text) <= MaxQuantity:
+        ActivateQuantity = int(message.text)
+        TextForMultiCheck = "🧾<b>Мульти-чек</b>\n" \
+                            "\n" \
+                            f"<b>Сумма чека: {Sum}</b>\n" \
+                            f"\n" \
+                            f"<b>Внутри чека:</b> {ActivateQuantity} активация(й) по {Sum} рублей\n" \
+                            f"\n" \
+                            f"<b>🔸 Пожалуйста, подтвердите корректность данных:</b>"
+        await message.answer(TextForMultiCheck, reply_markup=await Button.ConfirmCheck('multi'), parse_mode=ParseMode.HTML)
+    else:
+        await message.answer('Вы указали кол-во активаций невозможное с вашим балансом')
 
 @CheckRouter.callback_query(F.data.startswith('Add_Subscribe_'))
 async def AddSubscribe(call: CallbackQuery):

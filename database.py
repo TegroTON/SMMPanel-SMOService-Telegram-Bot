@@ -106,6 +106,7 @@ async def GetSubCategory(IdCategory):
     else:
         return Category
 
+
 async def DeleteCategory(id):
     cursor = con.cursor()
     cursor.execute(f"DELETE FROM category WHERE id = '{id}' OR parent_id = '{id}' ")
@@ -116,7 +117,8 @@ async def DeleteCategory(id):
 
 async def GetServiceCategory(id):
     cursor = con.cursor()
-    return cursor.execute(f'''SELECT service FROM category WHERE id = '{id}' ''').fetchone()[0]
+    service = cursor.execute(f'''SELECT service FROM category WHERE id = '{id}' ''').fetchone()[0]
+    return service
 
 
 async def AddProduct(ParentID, ProductName, MinOrder, MaxOrder, Price, ServiceId):
@@ -238,6 +240,12 @@ async def GetOrders(user_id=None, Link=None):
     return orders
 
 
+async def Orders():
+    cursor = con.cursor()
+    orders = cursor.execute('''SELECT * FROM orders''').fetchall()
+    return orders
+
+
 async def UserExists(user_id):
     cursor = con.cursor()
     res = cursor.execute(f'''SELECT * FROM Referral WHERE user_id = '{user_id}' ''').fetchall()
@@ -283,7 +291,8 @@ async def UpdateMoneyReferral(user_id, sum):
 
 async def GetMoneyReferral(user_id):
     cursor = con.cursor()
-    return cursor.execute(f'''SELECT referral_money FROM Referral WHERE user_id = '{user_id}' ''').fetchone()[0]
+    money = cursor.execute(f'''SELECT referral_money FROM Referral WHERE user_id = '{user_id}' ''').fetchone()[0]
+    return money
 
 
 async def AddChanel(channel_id, Name, Url):

@@ -20,6 +20,10 @@ async def ReferralLink(message: Message, bot: Bot):
     # Проверяем сколько всего человек пригласил пользователей
     CountUser = await db.CountReferrals(message.from_user.id)
     MoneyUser = await db.GetMoneyReferral(message.from_user.id)
+    if MoneyUser is None:
+        MoneyUser = 0
+    if CountUser is None:
+        CountUser = 0
     Info = await bot.get_me()
     text = '🤝 Партнерская программа\n' \
            '\n' \

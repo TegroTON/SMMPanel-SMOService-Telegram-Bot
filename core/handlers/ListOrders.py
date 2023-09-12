@@ -2,7 +2,6 @@ from aiogram.filters.command import Command
 from aiogram.types import Message, CallbackQuery
 from aiogram import F
 from core.keyboards import Button
-from core.config import config
 import database as db
 import requests
 import json
@@ -33,17 +32,7 @@ async def MyOrder(message: Message, bot: Bot):
             # Перебираем все заказы пользователя и обновляем статусы
             for order in OrderList:
                 NameProduct = await db.GetProductName(order[2])
-                url = 'https://smmpanel.ru/api/v1'
-                data = {
-                    'key': '6qkjaI5Wb8OsDzrQDagYNPtpbJNdtpGe',
-                    'action': 'status',
-                    'order': order[8]
-                }
-                response = requests.post(url, data=data)
-                OrderData = json.loads(response.text)
-                Status = (OrderData['status'])
-                Order_id = (OrderData['order'])
-                await db.UpdateOrderStatus(Order_id, Status)
+                Status = order[9]
                 # Проверяем все возможные статусы
                 if Status == 'Pending':
                     text += f'🆕В ожидании {NameProduct} {order[4]}шт {order[5]}RUB\n'
@@ -81,32 +70,7 @@ async def MyOrder(message: Message, bot: Bot):
                 if a < len(OrderList):
                     NameProduct = await db.GetProductName(OrderList[a][2])
                     Service = await db.GetServiceCategory(NameProduct[1])
-                    if Service == 'SmmPanel':
-                        url = 'https://smmpanel.ru/api/v1'
-                        data = {
-                            'key': '6qkjaI5Wb8OsDzrQDagYNPtpbJNdtpGe',
-                            'action': 'status',
-                            'order': OrderList[a][8]
-                        }
-                        response = requests.post(url, data=data)
-                        OrderData = json.loads(response.text)
-                        Status = (OrderData['status'])
-                        Order_id = (OrderData['order'])
-                        await db.UpdateOrderStatus(Order_id, Status)
-                    else:
-                        url = 'https://smoservice.media/api/'
-                        data = {
-                            'user_id': '419104',
-                            'api_key': 'DBF53938E4AEA142A34548ACA761228B',
-                            'action': 'check_order',
-                            'order_id': OrderList[a][8]
-                        }
-                        response = requests.post(url, data=data)
-                        OrderData = json.loads(response.text)
-                        Status = (OrderData['data']['status'])
-                        Order_id = (OrderData['data']['order_id'])
-                        await db.UpdateOrderStatus(Order_id, Status)
-                        print(Status)
+                    Status = OrderList[a][9]
                     if Status == 'Pending':
                         text += f'🆕В ожидании {NameProduct[0]} {OrderList[a][4]}шт {OrderList[a][5]}RUB\n'
                     elif Status == 'In progress' or Status == 'Выполняется':
@@ -138,7 +102,6 @@ async def MyOrder(message: Message, bot: Bot):
                         text += f'❌Отменен {NameProduct[0]} {OrderList[a][4]}шт {OrderList[a][5]}RUB\n'
             # Делаем защиту в меньшую и большую сторону
             if MinOrdersList >= 0:
-                print(MaxOrdersList)
                 if MaxOrdersList < 13:
                     await bot.send_message(message.from_user.id, text, reply_markup=Button.OnlyNextOrdersList)
                 elif len(OrderList) > MaxOrdersList > 12:
