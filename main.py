@@ -32,7 +32,7 @@ main_router = Router()
 BASE_URL = getenv("BOT_URL")
 MAIN_BOT_TOKEN = getenv("TOKEN")
 
-WEB_SERVER_HOST = "127.0.0.1"
+WEB_SERVER_HOST = "localhost"
 WEB_SERVER_PORT = 8080
 MAIN_BOT_PATH = "/webhook/main"
 OTHER_BOTS_PATH = "/webhook/bot/{bot_token}"

@@ -16,4 +16,5 @@ async def FAQCommand(message: Message):
 
 @FAQRouter.message(F.text == '💡FAQ')
 async def FAQ(message: Message):
-    await message.answer(TextUser.FAQText)
+    AllText = TextUser.FAQText + TextUser.HelpMessage
+    await message.answer(AllText)

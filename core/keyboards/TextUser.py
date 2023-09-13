@@ -1,4 +1,7 @@
-HelpMessage = 'Всегда рады вам помочь! Заходите: https://t.me/smoservice_bot'
+HelpMessage = '\n' \
+              '<b>Поддержка</b>\n' \
+              'Всегда рады вам помочь! Заходите: https://t.me/smoservicebot\n' \
+              'Или напишите в нашу службу поддержки на сайте https://smoservice.media/support/'
 FAQText = '❓ Как быстро запустится заказ?\n' \
           '❕ Мгновенно\n' \
           '\n' \

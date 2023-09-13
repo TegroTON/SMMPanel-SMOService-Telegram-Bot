@@ -17,7 +17,10 @@ import json
 import time
 import hmac
 import hashlib
+import datetime
+import jinja2
 from aiogram import Bot, Router
+from aiogram.types.input_file import FSInputFile
 
 # Глобальные переменные для получения и обновления баланса
 Sum = 0.0
@@ -81,20 +84,65 @@ async def ReplenishBalance(message: Message, state: FSMContext):
         sign = hashlib.md5((data_string + SecretKey).encode()).hexdigest()
         PayUrl = f'https://tegro.money/pay/?{data_string}&sign={sign}'
         await message.answer('Выберите способ оплаты', reply_markup=await Button.TegroPay(PayUrl))
-        #await message.answer('Проверить оплату', reply_markup=Button.CheckPay)
-        #await message.answer('Если хотите отменить нажмите на кнопку в меню⤵️ ', reply_markup=Button.BackMainKeyboard)
     else:
         await state.clear()
 
+
+@BalanceRouter.callback_query(F.data == 'history_balance')
+async def history_balance(callback: CallbackQuery, state: FSMContext):
+    Datas = await db.Get_History(callback.from_user.id)
+    TextAnswer = ''
+    date = ''
+    Id = 0
+    if Datas:
+        for data in Datas:
+            if data[0] > Id:
+                Id = data[0]
+                date = data[4]
+                month = data[4].split('-')
+                TextAnswer = f'<b>• {month[2]}.{month[1]}.{month[0]}</b>\n'
+        for data in Datas:
+            if data[4] == date:
+                Time = data[5].split(':')
+                if data[2] > 0:
+                    TextAnswer += f'<i>{Time[0]}:{Time[1]} {data[3]} +{data[2]} рублей</i>\n'
+                else:
+                    TextAnswer += f'<i>{Time[0]}:{Time[1]} {data[3]} {data[2]} рублей</i>\n'
+        await callback.message.answer(TextAnswer, reply_markup=Button.GetAllHistoryKeyboard)
+        await callback.message.delete()
+    else:
+        TextAnswer = 'У вас нет операций по счету'
+        await callback.answer(TextAnswer)
+
+
+@BalanceRouter.callback_query(F.data == 'Get_All_History')
+async def Get_All_History(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    Datas = await db.Get_History(callback.from_user.id)
+    file = open(f"отчет_{callback.from_user.id}.txt", "w+")
+    date = ''
+    for data in Datas:
+        if date != data[4]:
+            date = data[4]
+            day = date.split('-')[2]
+            month = date.split('-')[1]
+            year = date.split('-')[0]
+            file.write(f"{day}.{month}.{year}\n")
+        hour = data[5].split(':')[0]
+        minute = data[5].split(':')[1]
+        file.write(f"{hour}:{minute} {data[3]} {data[2]} рублей\n")
+    file.close()
+    document = FSInputFile(f'отчет_{callback.from_user.id}.txt')
+    await bot.send_document(callback.from_user.id, document)
+    await callback.message.delete()
 
 async def tegro_success(request):
     param = request.query.get('order_id')
     param2 = request.query.get('status')
     bot = Bot(token=os.getenv('TOKEN'))
     if param2 == 'success':
-        print('пришло')
         await db.UpdateBalance(user_id, Sum)
         await bot.send_message(chat_id=user_id, text='оплата прошла успешно', reply_markup=Button.ReplyStartKeyboard)
+        await db.Add_History(user_id, Sum, 'Пополнение')
 
 
 async def tegro_fail(request):

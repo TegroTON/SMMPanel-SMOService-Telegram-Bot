@@ -161,6 +161,8 @@ async def get_product(message: Message, state: FSMContext):
         else:
             # Если денег хватает, то отправляем заказ в SMMPanel
             await db.WriteOffTheBalance(UserId, Sum)
+            Sum_History = -Sum
+            await db.Add_History(UserId, Sum_History, 'Реф программа')
             Referrals = await db.GetReferral(UserId)
             if Referrals is not None:
                 SecondLevelReferral = await db.GetReferral(Referrals)
@@ -168,9 +170,11 @@ async def get_product(message: Message, state: FSMContext):
                     ReferralSum = Sum * 0.04
                     await db.UpdateMoneyReferral(SecondLevelReferral, ReferralSum)
                     await db.UpdateBalance(SecondLevelReferral, ReferralSum)
+                    await db.Add_History(SecondLevelReferral, ReferralSum, 'Реф программа')
                 ReferralSum = Sum * 0.12
                 await db.UpdateMoneyReferral(Referrals, ReferralSum)
                 await db.UpdateBalance(Referrals, ReferralSum)
+                await db.Add_History(Referrals, ReferralSum, 'Реф программа')
             Url = message.text
             if Service == 'SmmPanel':
                 res = await OrderSmmPanel(Url, ServiceId, UserId, Sum)

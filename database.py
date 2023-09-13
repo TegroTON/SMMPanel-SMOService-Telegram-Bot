@@ -62,6 +62,13 @@ def sql_start():
                      id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
                      api_key TEXT NOT NULL,
                      id_user INTEGER NOT NULL)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS history(
+                     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+                     user_id TEXT NOT NULL,
+                     sum INTEGER NOT NULL,
+                     type TEXT NOT NULL,
+                     date DATETIME NOT NULL,
+                     time DATETIME NOT NULL)''')
     con.commit()
 
 
@@ -356,14 +363,19 @@ async def DeleteCheck(CheckId=None, Url=None, LinkCheckId=None):
 async def UpdateQuantityAndActivate(LinkIdCheck, IdActivate):
     cursor = con.cursor()
     cursor.execute(f'''UPDATE CheckForUser SET quantity = quantity - 1 WHERE linkcheckid = '{LinkIdCheck}' ''')
-    cursor.execute(f'''UPDATE CheckForUser SET UserActivate = '{IdActivate}, ' WHERE linkcheckid = '{LinkIdCheck}' ''')
+    UserActivate = cursor.execute(f'''SELECT USerActivate FROM CheckForUser WHERE linkcheckid = '{LinkIdCheck}' ''').fetchone()[0]
+    if UserActivate is None or UserActivate == '':
+        Id_User = f'{Id_Channel}'
+    else:
+        Id_User = f'{ChanID},{Id_Channel}'
+    cursor.execute(f'''UPDATE CheckForUser SET UserActivate = '{Id_User}' WHERE linkcheckid = '{LinkIdCheck}' ''')
+    con.commit()
     con.commit()
 
 
 async def UpdateChannel(LinkIdCheck, Id_Channel):
     cursor = con.cursor()
     ChanID = cursor.execute(f'''SELECT id_channel FROM CheckForUser WHERE linkcheckid = '{LinkIdCheck}' ''').fetchone()[0]
-    print(ChanID)
     if ChanID is None or ChanID == '':
         Id_Channel = f'{Id_Channel}'
     else:
@@ -424,3 +436,17 @@ async def WriteOffTheReferral(referral_id, sum_referral):
     cursor = con.cursor()
     cursor.execute(f'''UPDATE Referral SET referral_money = referral_money - '{sum_referral}' WHERE user_id = '{referral_id}' ''')
     con.commit()
+
+
+async def Add_History(user_id, sum, type):
+    cursor = con.cursor()
+    date = datetime.date.today()
+    time = datetime.datetime.now().time()
+    cursor.execute(f"INSERT INTO history (user_id, sum, type, date, time) VALUES ('{user_id}', '{sum}', '{type}', '{date}', '{time}' )")
+    con.commit()
+
+
+async def Get_History(user_id):
+    cursor = con.cursor()
+    res = cursor.execute(f'''SELECT * FROM history WHERE user_id = '{user_id}' ''').fetchall()
+    return res

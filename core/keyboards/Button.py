@@ -13,15 +13,12 @@ StartKeyboard = [
     ],
     [
         KeyboardButton(text='💵Заработать'),
-        KeyboardButton(text='⛑️Помощь'),
-    ],
-    [
         KeyboardButton(text='💡FAQ'),
-        KeyboardButton(text='🧾Чеки'),
     ],
     [
         KeyboardButton(text='🤖Мои Боты'),
-    ]
+        KeyboardButton(text='🧾Чеки'),
+    ],
 ]
 ReplyStartKeyboard = ReplyKeyboardMarkup(keyboard=StartKeyboard, resize_keyboard=True)
 
@@ -36,14 +33,11 @@ AdminMainKeyboard = [
     ],
     [
         KeyboardButton(text='💵Заработать'),
-        KeyboardButton(text='⛑️Помощь'),
-    ],
-    [
         KeyboardButton(text='💡FAQ'),
-        KeyboardButton(text='🧾Чеки'),
     ],
     [
         KeyboardButton(text='🤖Мои Боты'),
+        KeyboardButton(text='🧾Чеки'),
     ],
     [
         KeyboardButton(text='Админ-панель')
@@ -159,6 +153,14 @@ Balance = [
 ]
 BalanceKeyboard = InlineKeyboardMarkup(inline_keyboard=Balance)
 
+
+GetAllHistory = [
+    [
+        InlineKeyboardButton(text='Показать все операции',
+                             callback_data='Get_All_History')
+    ]
+]
+GetAllHistoryKeyboard = InlineKeyboardMarkup(inline_keyboard=GetAllHistory)
 
 CheckTransButton = [
     [

@@ -50,6 +50,7 @@ async def MyOrder(message: Message, bot: Bot):
                     if await db.GetRefundStatus(order[0]) != 1:
                         await db.Refund(order[0])
                         await db.UpdateBalance(message.from_user.id, order[5])
+                        await db.Add_History(message.from_user.id, order[5], 'Отмена заказа')
                         Referrals = await db.GetReferral(message.from_user.id)
                         if Referrals is not None:
                             SecondLevelReferral = await db.GetReferral(Referrals)
@@ -57,9 +58,11 @@ async def MyOrder(message: Message, bot: Bot):
                                 ReferralSum = order[5] * 0.04
                                 await db.WriteOffTheReferral(SecondLevelReferral, ReferralSum)
                                 await db.WriteOffTheBalance(SecondLevelReferral, ReferralSum)
+                                await db.Add_History(SecondLevelReferral, -ReferralSum, 'Отмена заказа реф')
                             ReferralSum = order[5] * 0.12
                             await db.WriteOffTheReferral(Referrals, ReferralSum)
                             await db.WriteOffTheBalance(Referrals, ReferralSum)
+                            await db.Add_History(Referrals, -ReferralSum, 'Отмена заказа реф')
                     text += f'❌Отменен {NameProduct} {order[4]}шт {order[5]}RUB\n'
             await message.answer(text)
         # Если заказы не поместятся в одно сообщение
@@ -89,6 +92,7 @@ async def MyOrder(message: Message, bot: Bot):
                         if await db.GetRefundStatus(OrderList[a][0]) != 1:
                             await db.Refund(OrderList[a][0])
                             await db.UpdateBalance(message.from_user.id, OrderList[a][5])
+                            await db.Add_History(message.from_user.id, OrderList[a][5], 'Отмена заказа')
                             Referrals = await db.GetReferral(message.from_user.id)
                             if Referrals is not None:
                                 SecondLevelReferral = await db.GetReferral(Referrals)
@@ -96,9 +100,11 @@ async def MyOrder(message: Message, bot: Bot):
                                     ReferralSum = OrderList[a][5] * 0.04
                                     await db.WriteOffTheReferral(SecondLevelReferral, ReferralSum)
                                     await db.WriteOffTheBalance(SecondLevelReferral, ReferralSum)
+                                    await db.Add_History(SecondLevelReferral, -ReferralSum, 'Отмена заказа реф')
                                 ReferralSum = OrderList[a][5] * 0.12
                                 await db.WriteOffTheReferral(Referrals, ReferralSum)
                                 await db.WriteOffTheBalance(Referrals, ReferralSum)
+                                await db.Add_History(Referrals, -ReferralSum, 'Отмена заказа реф')
                         text += f'❌Отменен {NameProduct[0]} {OrderList[a][4]}шт {OrderList[a][5]}RUB\n'
             # Делаем защиту в меньшую и большую сторону
             if MinOrdersList >= 0:
