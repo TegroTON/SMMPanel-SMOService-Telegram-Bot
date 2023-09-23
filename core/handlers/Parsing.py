@@ -87,8 +87,6 @@ async def ParsingSmoService():
                 IdCategory = await db.GetIdParentCategory(category, 'SmoService', None)
                 await db.AddCategory(sub_category, 'SmoService', IdCategory)
                 ParentId = await db.GetIdParentCategory(sub_category, 'SmoService', IdCategory)
-                if category == 'Инстаграм':
-                    print(ParentId)
             else:
                 ParentId = await db.GetIdParentCategory(category, 'SmoService', None)
             await db.AddProduct(ParentId, NameProduct, MinOrder, MaxOrder, ParsPrice, ServiceID)

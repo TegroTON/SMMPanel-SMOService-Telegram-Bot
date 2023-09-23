@@ -15,7 +15,7 @@ async def ReferralLinkCommand(message: Message):
     await ReferralLink(message)
 
 
-@ReferralRouter.message(F.text == '💵Заработать')
+@ReferralRouter.message(F.text == '💰 Рефералы')
 async def ReferralLink(message: Message, bot: Bot):
     # Проверяем сколько всего человек пригласил пользователей
     CountUser = await db.CountReferrals(message.from_user.id)

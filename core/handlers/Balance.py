@@ -43,7 +43,7 @@ async def MyBalanceKeyboard(message: Message, state: FSMContext):
 
 
 # Обработка кнопки Мой Баланс
-@BalanceRouter.message(F.text == '🏦Мой баланс')
+@BalanceRouter.message(F.text == '👛 Кошелёк')
 async def MyBalance(message: Message, state: FSMContext):
     # Получаем баланс из бд с помощью id
     balance = await db.GetBalance(message.from_user.id)

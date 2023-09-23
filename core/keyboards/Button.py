@@ -5,18 +5,18 @@ from core.config import config
 
 StartKeyboard = [
     [
-        KeyboardButton(text='🔥Создать новый заказ')
+        KeyboardButton(text='🔥Новый заказ'),
+        KeyboardButton(text='📋 История'),
     ],
     [
-        KeyboardButton(text='📋Мои заказы'),
-        KeyboardButton(text='🏦Мой баланс')
+        KeyboardButton(text='👛 Кошелёк'),
+        KeyboardButton(text=' 💰 Рефералы '),
     ],
     [
-        KeyboardButton(text='💵Заработать'),
-        KeyboardButton(text='💡FAQ'),
-    ],
-    [
+        KeyboardButton(text='🦋 Чеки'),
         KeyboardButton(text='🤖Мои Боты'),
+    ],
+    [
         KeyboardButton(text='🧾Чеки'),
     ],
 ]
@@ -25,23 +25,20 @@ ReplyStartKeyboard = ReplyKeyboardMarkup(keyboard=StartKeyboard, resize_keyboard
 
 AdminMainKeyboard = [
     [
-        KeyboardButton(text='🔥Создать новый заказ')
+        KeyboardButton(text='🔥Новый заказ'),
+        KeyboardButton(text='📋 История'),
     ],
     [
-        KeyboardButton(text='📋Мои заказы'),
-        KeyboardButton(text='🏦Мой баланс')
+        KeyboardButton(text='👛 Кошелёк'),
+        KeyboardButton(text='💰 Рефералы'),
     ],
     [
-        KeyboardButton(text='💵Заработать'),
-        KeyboardButton(text='💡FAQ'),
-    ],
-    [
+        KeyboardButton(text='🦋 Чеки'),
         KeyboardButton(text='🤖Мои Боты'),
-        KeyboardButton(text='🧾Чеки'),
     ],
     [
-        KeyboardButton(text='Админ-панель')
-    ],
+        KeyboardButton(text='Админ-панель'),
+    ]
 ]
 ReplyAdminMainKeyboard = ReplyKeyboardMarkup(keyboard=AdminMainKeyboard, resize_keyboard=True)
 
@@ -59,9 +56,9 @@ AdminPanelKeyboard = [
     [
         KeyboardButton(text='Рассылка')
     ],
-    [
-        KeyboardButton(text='Редактирование сообщений')
-    ],
+    #[
+        #KeyboardButton(text='Редактирование сообщений')
+    #],
     [
         KeyboardButton(text='Выбрать сервис для создания заказа')
     ]
@@ -180,9 +177,6 @@ NextOrderListButtonAdmin = [
         InlineKeyboardButton(text='id', callback_data='SearchForId'),
         InlineKeyboardButton(text='Ссылка', callback_data='SearchForLink')
     ],
-    [
-        InlineKeyboardButton(text='Пользователь', callback_data='SearchForUserName'),
-    ],
 ]
 NextOrdersListAdmin = InlineKeyboardMarkup(inline_keyboard=NextOrderListButtonAdmin)
 
@@ -196,9 +190,6 @@ BackOrdersButtonAdmin = [
         InlineKeyboardButton(text='id', callback_data='SearchForId'),
         InlineKeyboardButton(text='Ссылка', callback_data='SearchForLink')
     ],
-    [
-        InlineKeyboardButton(text='Пользователь', callback_data='SearchForUserName'),
-    ],
 ]
 BackOrdersListAdmin = InlineKeyboardMarkup(inline_keyboard=BackOrdersButtonAdmin)
 
@@ -211,9 +202,6 @@ OnlyNextOrdersButtonAdmin = [
     [
         InlineKeyboardButton(text='id', callback_data='SearchForId'),
         InlineKeyboardButton(text='Ссылка', callback_data='SearchForLink')
-    ],
-    [
-        InlineKeyboardButton(text='Пользователь', callback_data='SearchForUserName'),
     ],
 ]
 OnlyNextOrdersListAdmin = InlineKeyboardMarkup(inline_keyboard=OnlyNextOrdersButtonAdmin)
@@ -248,17 +236,11 @@ OnlyNextOrdersList = InlineKeyboardMarkup(inline_keyboard=NextOrdersButton)
 
 SearchOrdersAdminButton = [
     [
-        KeyboardButton(text='Поиск по Id'),
-        KeyboardButton(text='Ссылке')
+        InlineKeyboardButton(text='id', callback_data='SearchForId'),
+        InlineKeyboardButton(text='Ссылка', callback_data='SearchForLink')
     ],
-    [
-        KeyboardButton(text='Пользователю')
-    ],
-    [
-        KeyboardButton(text='Отмена')
-    ]
 ]
-SearchOrdersAdminKeyboard = ReplyKeyboardMarkup(keyboard=SearchOrdersAdminButton)
+SearchOrdersAdminKeyboard = InlineKeyboardMarkup(inline_keyboard=SearchOrdersAdminButton)
 
 
 CheckPersonOrMultiButton = [

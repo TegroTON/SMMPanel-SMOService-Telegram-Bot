@@ -20,7 +20,7 @@ async def MyOrderCommand(message: Message):
     await MyOrder(message)
 
 
-@ListOrders.message(F.text == '📋Мои заказы')
+@ListOrders.message(F.text == '📋 История')
 async def MyOrder(message: Message, bot: Bot):
     # Получаем список всех заказов
     OrderList = await db.GetOrders(message.from_user.id)
@@ -34,19 +34,20 @@ async def MyOrder(message: Message, bot: Bot):
                 NameProduct = await db.GetProductName(order[2])
                 Status = order[9]
                 # Проверяем все возможные статусы
+                print(Status)
                 if Status == 'Pending':
                     text += f'🆕В ожидании {NameProduct} {order[4]}шт {order[5]}RUB\n'
-                elif Status == 'In progress':
+                elif Status == 'In progress' or Status == 'Выполняется':
                     text += f'🔄В работе {NameProduct} {order[4]}шт {order[5]}RUB\n'
                 elif Status == 'Processing':
                     text += f'➕Обработка {NameProduct} {order[4]}шт {order[5]}RUB\n'
-                elif Status == 'Completed':
+                elif Status == 'Completed' or Status == 'Завершен':
                     text += f'☑️Выполнен {NameProduct} {order[4]}шт {order[5]}RUB\n'
                 elif Status == 'success':
                     text += f'🆕Новый {NameProduct} {order[4]}шт {order[5]}RUB\n'
                 elif Status == 'Partial':
                     text += f'☑️Выполнен частично {NameProduct} {order[4]}шт {order[5]}RUB\n'
-                elif Status == 'Canceled':
+                elif Status == 'Canceled' or Status == 'Отменен':
                     if await db.GetRefundStatus(order[0]) != 1:
                         await db.Refund(order[0])
                         await db.UpdateBalance(message.from_user.id, order[5])

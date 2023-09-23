@@ -31,7 +31,7 @@ class FSMFillFrom(StatesGroup):
     GetPrivateGroup = State()
 
 
-@CheckRouter.message(F.text == '🧾Чеки')
+@CheckRouter.message(F.text == '🦋 Чеки')
 async def Check(message: Message):
     await message.answer(TextUser.TextAddCheck, reply_markup=Button.CheckPersonOrMultiKeyboard,
                          parse_mode=ParseMode.HTML)

@@ -236,14 +236,16 @@ async def GetProductName(id):
     return name
 
 
-async def GetOrders(user_id=None, Link=None):
+async def GetOrders(user_id=None, Id=None, Link=None):
     cursor = con.cursor()
-    if user_id is None:
-        orders = cursor.execute('''SELECT * FROM orders''').fetchall()
+    if Id is not None:
+        orders = cursor.execute(f'''SELECT * FROM orders WHERE order_id = '{Id}' ''').fetchall()
     elif Link is not None:
-        pass
-    else:
+        orders = cursor.execute(f'''SELECT * FROM orders WHERE url = '{Link}' ''').fetchall()
+    elif user_id is not None:
         orders = cursor.execute(f'''SELECT * FROM orders WHERE user_id = '{user_id}' ''').fetchall()
+    elif user_id is None:
+        orders = cursor.execute('''SELECT * FROM orders''').fetchall()
     return orders
 
 
