@@ -299,7 +299,6 @@ sudo systemctl status tgbot.service
 
 ## Roadmap
 
-See the [open issues](https://github.com/m1ja/SMMTestBot/issues) for a list of proposed features (and known issues).
 Список предлагаемых функций (и известных проблем) см. в разделе ["Открытые вопросы"](https://github.com/m1ja/SMMTestBot/issues).
 
 
