@@ -151,6 +151,21 @@ Balance = [
 BalanceKeyboard = InlineKeyboardMarkup(inline_keyboard=Balance)
 
 
+BalanceSum = [
+    [
+        InlineKeyboardButton(text='250', callback_data='SumReplenish_250'),
+        InlineKeyboardButton(text='500', callback_data='SumReplenish_500'),
+        InlineKeyboardButton(text='2500', callback_data='SumReplenish_2500'),
+    ],
+    [
+        InlineKeyboardButton(text='500', callback_data='SumReplenish_5000'),
+        InlineKeyboardButton(text='10000', callback_data='SumReplenish_10000'),
+        InlineKeyboardButton(text='25000', callback_data='SumReplenish_25000'),
+    ]
+]
+BalanceSumKeyboard = InlineKeyboardMarkup(inline_keyboard=BalanceSum)
+
+
 GetAllHistory = [
     [
         InlineKeyboardButton(text='Показать все операции',

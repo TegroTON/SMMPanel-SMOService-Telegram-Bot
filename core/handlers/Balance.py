@@ -57,21 +57,44 @@ async def MyBalance(message: Message, state: FSMContext):
 @BalanceRouter.callback_query(F.data == 'replenish_balance')
 async def replenish_balance(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
-    await callback.message.answer('💳 Введите сумму пополнения ниже')
+    await callback.message.answer('💳 Введите сумму пополнения ниже или выберете из предложенных вариантов ', reply_markup=Button.BalanceSumKeyboard)
     await state.set_state(FSMFillFrom.ReplenishBalance)
 
 
 # Обработка FSM для пополнения баланса
+@BalanceRouter.callback_query(F.data.startswith('SumReplenish_'))
+async def ReplenishBalance(call: CallbackQuery, state: FSMContext):
+    await state.clear()
+    global Sum, order_id, user_id
+    Sum = int(call.data[13:])
+    user_id = call.from_user.id
+    Shopped = str(os.getenv('SHOPID'))
+    SecretKey = str(os.getenv('SECRETKEY'))
+    order_id = uuid.uuid4()
+    data = {
+        'shop_id': Shopped,
+        'amount': Sum,
+        'currency': 'RUB',
+        'order_id': order_id,
+        'test': 1
+    }
+    sorted_data = sorted(data.items())
+    data_string = urlencode(sorted_data)
+    sign = hashlib.md5((data_string + SecretKey).encode()).hexdigest()
+    PayUrl = f'https://tegro.money/pay/?{data_string}&sign={sign}'
+    await call.message.answer('Выберите способ оплаты', reply_markup=await Button.TegroPay(PayUrl))
+    await call.message.delete()
+
+
 @BalanceRouter.message(StateFilter(FSMFillFrom.ReplenishBalance))
 async def ReplenishBalance(message: Message, state: FSMContext):
-    global Sum
+    global Sum, order_id, user_id
     if message.text.isdigit() is True:
         Sum = float(message.text)
+        user_id = message.from_user.id
         Shopped = str(os.getenv('SHOPID'))
         SecretKey = str(os.getenv('SECRETKEY'))
-        global order_id, user_id
         order_id = uuid.uuid4()
-        user_id = message.from_user.id
         data = {
             'shop_id': Shopped,
             'amount': Sum,
@@ -134,6 +157,7 @@ async def Get_All_History(callback: CallbackQuery, state: FSMContext, bot: Bot):
     document = FSInputFile(f'отчет_{callback.from_user.id}.txt')
     await bot.send_document(callback.from_user.id, document)
     await callback.message.delete()
+
 
 async def tegro_success(request):
     param = request.query.get('order_id')
