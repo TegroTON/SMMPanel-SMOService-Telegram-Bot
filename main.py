@@ -1,39 +1,51 @@
-import logging
-import sys
 import asyncio
-from os import getenv
-from finite_state_machine import form_router
-from dotenv import load_dotenv
-from core.handlers import StartCommand, SendAllAdmin, ReferralLink, Parsing, ListOrders, Help, FAQ, CreateAnOrder, \
-    Check, admin, AdmibGetAllOrders, AddOrRemoveCategory, Balance, CreateBot, Inline_Query, AdminGetService, \
-    CheckStatus
-from aiogram import Bot, Dispatcher, F, Router
+
+import aiohttp_jinja2
+import jinja2
+from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
+from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.webhook.aiohttp_server import (
     SimpleRequestHandler,
     TokenBasedRequestHandler,
     setup_application,
 )
-from aiogram.filters.state import State, StatesGroup
 from aiohttp import web
-import jinja2
-import aiohttp_jinja2
-from smoservice.forum import views
 
-load_dotenv()
-main_router = Router()
-BASE_URL = getenv("BOT_URL")
-MAIN_BOT_TOKEN = getenv("TOKEN")
+from core.config import config
+from core.handlers import (
+    FAQ,
+    AddOrRemoveCategory,
+    AdminGetAllOrders,
+    AdminGetService,
+    Check,
+    CreateAnOrder,
+    CreateBot,
+    Inline_Query,
+    ListOrders,
+    Parsing,
+    ReferralLink,
+    SendAllAdmin,
+    StartCommand,
+    admin,
+    my_orders,
+    order_info,
+    wallet,
+)
+from core.service_provider.manager import provider_manager
+from core.utils.logger import init_logger
 
-WEB_SERVER_HOST = "127.0.0.1"
-WEB_SERVER_PORT = 8080
-MAIN_BOT_PATH = "/webhook/main"
-OTHER_BOTS_PATH = "/webhook/bot/{bot_token}"
+BASE_URL = config.BOT_URL
+MAIN_BOT_TOKEN = config.BOT_TOKEN
+
+WEB_SERVER_HOST = config.HOST
+WEB_SERVER_PORT = config.PORT
+MAIN_BOT_PATH = config.MAIN_BOT_PATH
+OTHER_BOTS_PATH = config.OTHER_BOTS_PATH
 OTHER_BOTS_URL = f"{BASE_URL}{OTHER_BOTS_PATH}"
 MAIN_BOT_URL = f"{BASE_URL}{MAIN_BOT_PATH}"
-
 
 
 class FSMFillFrom(StatesGroup):
@@ -42,11 +54,15 @@ class FSMFillFrom(StatesGroup):
 
 def setup_routes(application):
     from smoservice.forum.routes import setup_routes as setup_forum_routes
+
     setup_forum_routes(application)
 
 
 def setup_external_libraries(application: web.Application) -> None:
-    aiohttp_jinja2.setup(application, loader=jinja2.FileSystemLoader("templates"))
+    aiohttp_jinja2.setup(
+        application,
+        loader=jinja2.FileSystemLoader("./templates"),
+    )
 
 
 def setup_app(application):
@@ -54,7 +70,7 @@ def setup_app(application):
     setup_routes(application)
 
 
-async def sheduler(period, fu, *args, **kw):
+async def scheduler(period, fu, *args, **kw):
     while True:
         await asyncio.sleep(period)
         await fu(*args, **kw)
@@ -62,13 +78,25 @@ async def sheduler(period, fu, *args, **kw):
 
 async def on_startup(dispatcher: Dispatcher, bot: Bot):
     await bot.set_webhook(f"{BASE_URL}{MAIN_BOT_PATH}")
-    loop = asyncio.get_event_loop()  # или asyncio.get_event_loop() если уже есть запущенный луп.
 
-    loop.create_task(sheduler(900, CheckStatus.check_status))
+    loop = asyncio.get_event_loop()
+    loop.create_task(
+        scheduler(
+            config.CHECK_ORDER_STATUS_INTERVAL,
+            provider_manager.check_orders,
+        )
+    )
+    loop.create_task(
+        scheduler(
+            config.AUTO_STARTING_ORDERS_INTERVAL,
+            provider_manager.activate_orders,
+        )
+    )
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    init_logger()
+
     session = AiohttpSession()
     bot_settings = {"session": session, "parse_mode": ParseMode.HTML}
     bot = Bot(token=MAIN_BOT_TOKEN, **bot_settings)
@@ -77,22 +105,34 @@ def main():
     main_dispatcher = Dispatcher(storage=storage)
     multibot_dispatcher = Dispatcher(storage=storage)
 
-    main_dispatcher.include_router(CreateBot.NewBotRouter)
-    main_dispatcher.include_routers(StartCommand.StartRouter,
-                                    admin.AdminRouter, CreateAnOrder.OrderRouter,
-                                    FAQ.FAQRouter, Help.HelpRouter, Inline_Query.QueryRouter,
-                                    ListOrders.ListOrders, Parsing.ParsingRouter, ReferralLink.ReferralRouter,
-                                    SendAllAdmin.SendAllRouter, AdminGetService.AdminGetServiceRouter, main_router)
-    main_dispatcher.include_routers(AddOrRemoveCategory.AddOrRemoveCategoryRouter, AdmibGetAllOrders.AdminAllOrders,
-                                    Check.CheckRouter, Balance.BalanceRouter)
+    main_dispatcher.include_routers(
+        StartCommand.start_router,
+        admin.AdminRouter,
+        CreateAnOrder.order_router,
+        FAQ.FAQRouter,
+        Inline_Query.QueryRouter,
+        ListOrders.ListOrders,
+        Parsing.ParsingRouter,
+        ReferralLink.referral_router,
+        SendAllAdmin.SendAllRouter,
+        AdminGetService.AdminGetServiceRouter,
+        CreateBot.NewBotRouter,
+        AddOrRemoveCategory.AddOrRemoveCategoryRouter,
+        AdminGetAllOrders.AdminAllOrders,
+        Check.check_router,
+        wallet.balance_router,
+        my_orders.my_orders_router,
+        order_info.order_info_router,
+    )
+
     main_dispatcher.startup.register(on_startup)
 
-    multibot_dispatcher.include_router(form_router)
-
     app = web.Application()
-    app.router.add_get('/tegroFail', Balance.tegro_fail)
     setup_app(app)
-    SimpleRequestHandler(dispatcher=main_dispatcher, bot=bot).register(app, path=MAIN_BOT_PATH)
+    SimpleRequestHandler(dispatcher=main_dispatcher, bot=bot).register(
+        app, path=MAIN_BOT_PATH
+    )
+    # TODO: This is not safe solution for multibots.
     TokenBasedRequestHandler(
         dispatcher=main_dispatcher,
         bot_settings=bot_settings,
@@ -100,7 +140,12 @@ def main():
 
     setup_application(app, main_dispatcher, bot=bot)
     setup_application(app, multibot_dispatcher)
-    app.router.add_static('/static/', path='static', name='static')
+
+    app.router.add_static(
+        "/static/",
+        path="./static",
+        name="static",
+    )
     web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
 
 

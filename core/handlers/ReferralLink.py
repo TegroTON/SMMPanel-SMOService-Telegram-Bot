@@ -1,57 +1,55 @@
-import os
-from aiogram.types import Message
-from aiogram.filters.command import Command
-from aiogram import F
-from core.keyboards import Button
-from core.config import config
+from aiogram import Bot, F, Router
+from aiogram.types import CallbackQuery
+
 import database as db
-from aiogram import Bot, Router
+from core.config import config
+from core.keyboards.referral import referral_keyboard
+from core.utils.bot import get_bot_username
 
-ReferralRouter = Router()
-
-# Обработка команды и кнопки
-@ReferralRouter.message(Command('earn'))
-async def ReferralLinkCommand(message: Message):
-    await ReferralLink(message)
+referral_router = Router()
 
 
-@ReferralRouter.message(F.text == '💰 Рефералы')
-async def ReferralLink(message: Message, bot: Bot):
-    # Проверяем сколько всего человек пригласил пользователей
-    CountUser = await db.CountReferrals(message.from_user.id)
-    MoneyUser = await db.GetMoneyReferral(message.from_user.id)
-    if MoneyUser is None:
-        MoneyUser = 0
-    if CountUser is None:
-        CountUser = 0
-    Info = await bot.get_me()
-    text = '🤝 Партнерская программа\n' \
-           '\n' \
-           '🏆 Вознаграждения по реферальной (партнерской) \n' \
-           'программе разделены на два уровня:\n' \
-           '├  За пользователей которые присоединились по Вашей ссылке - рефералы 1 уровня\n' \
-           '└  За пользователей которые присоединились по по ссылкам Ваших рефералов - рефералы 2 уровня' \
-           '\n' \
-           '🤑 Сколько можно заработать?\n' \
-           '├  За реферала 1 уровня: 12%\n' \
-           '└  За реферала 2 уровня: 4%\n' \
-           '\n' \
-           '🥇 Статистика:\n' \
-           f'├  Всего заработано: {MoneyUser}\n' \
-           f'├  Доступно к выводу: {MoneyUser}\n' \
-           f'└  Лично приглашенных: {CountUser}\n' \
-           '\n' \
-           '🎁 Бонус за регистрацию:\n' \
-           '└  За каждого пользователя который активировал бот по вашей реферальной ссылке вы так же получаете 5 рублей.\n' \
-           '\n' \
-           '⤵️ Ваши ссылки:\n' \
-           f'└https://t.me/{Info.username}?start={message.from_user.id}\n'
-    # Возвращаем в главное меню
-    if message.from_user.id == int(os.getenv('ADMIN_ID')):
-        await message.answer(text, reply_markup=Button.ReplyAdminMainKeyboard)
-    else:
-        await message.answer(text, reply_markup=Button.ReplyStartKeyboard)
+@referral_router.callback_query(F.data == "earn")
+async def ReferralLinkCommand(callback: CallbackQuery, bot: Bot):
+    user_id = callback.from_user.id
 
+    percents_iter = iter(config.REFERRAL_REPLENISH_BONUS_PERCENTS)
 
+    referrals = db.get_referrals(user_id)
 
+    bot_username = await get_bot_username(callback.bot)
 
+    total_bonus_amount = db.get_total_bonus_amount(user_id)
+
+    text = (
+        "<b>🤝 Партнерская программа</b>\n"
+        "\n"
+        "🏆 Вознаграждения по реферальной (партнерской) \n"
+        "программе разделены на два уровня:\n"
+        "├  За пользователей которые присоединились по Вашей ссылке "
+        "- рефералы 1 уровня\n"
+        "└  За пользователей которые присоединились по ссылкам Ваших"
+        " рефералов - рефералы 2 уровня"
+        "\n"
+        "🤑 Сколько можно заработать?\n"
+        f"├  За реферала 1 уровня: {next(percents_iter)}%\n"
+        f"└  За реферала 2 уровня: {next(percents_iter)}%\n"
+        "\n"
+        "🥇 Статистика:\n"
+        f"├  Всего заработано: {total_bonus_amount}\n"
+        # f"├  Доступно к выводу: {total_bonus_amount}\n"
+        f"└  Лично приглашенных: {len(referrals)}\n"
+        "\n"
+        "🎁 Бонус за регистрацию:\n"
+        "└  За каждого пользователя который активировал бот по вашей"
+        f" реферальной ссылке вы так же получаете {config.NEW_REFERRAL_BONUS}"
+        " рублей.\n"
+        "\n"
+        "⤵️ Ваши ссылки:\n"
+        f"└ https://t.me/{bot_username}?start=ref_{user_id}\n"
+    )
+
+    await callback.message.edit_text(
+        text,
+        reply_markup=referral_keyboard,
+    )
