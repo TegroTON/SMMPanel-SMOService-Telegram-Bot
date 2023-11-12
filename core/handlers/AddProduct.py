@@ -1,20 +1,16 @@
-import os
+from aiogram import F
 from aiogram.filters import StateFilter
 from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup, Message, \
-    CallbackQuery
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.filters.command import Command
-from aiogram import F
 from aiogram.fsm.state import default_state
-from core.keyboards import Button
-from core.config import config
-import database as db
+from aiogram.types import CallbackQuery, Message
 
+import database as db
+from core.config import config
+from core.keyboards import Button
 
 ParentId = 0
-NameParentCategory = ''
+NameParentCategory = ""
 
 
 class FSMFillFrom(StatesGroup):
@@ -28,62 +24,80 @@ class FSMFillFrom(StatesGroup):
     fill_InfoDeleteProduct = State()
 
 
-# кнопка добавления товара
-@config.dp.message(F.Text == 'Товары', StateFilter(default_state))
+@config.dp.message(F.Text == "Товары", StateFilter(default_state))
 async def CreateCategory(message: Message, state: FSMContext):
-    if message.from_user.id == int(os.getenv('ADMIN_ID')):
-        await message.answer('Выберите добавить в категорию, подкатегорию или удалить товар', reply_markup=Button.AddProductToCategoryOrSubCategory.as_markup())
+    if message.from_user.id == config.ADMIN_ID:
+        await message.answer(
+            "Выберите добавить в категорию, подкатегорию или удалить товар",
+            reply_markup=Button.AddProductToCategoryOrSubCategory.as_markup(),
+        )
     else:
-        await message.answer('Я не знаю такой команды')
+        await message.answer("Я не знаю такой команды")
 
 
 @config.dp.message(StateFilter(FSMFillFrom.fill_InfoProduct))
 async def InfoProduct(message: Message, state: FSMContext):
-    if message.from_user.id == int(os.getenv('ADMIN_ID')):
-        InfoProduct = message.text.split(',')
+    if message.from_user.id == config.ADMIN_ID:
+        InfoProduct = message.text.split(",")
         ProductName = str(InfoProduct[0])
         MinOrder = int(InfoProduct[1])
         MaxOrder = int(InfoProduct[2])
         Price = float(InfoProduct[3])
-        res = await db.AddProduct(ParentId, ProductName, MinOrder, MaxOrder, Price)
+        res = await db.AddProduct(
+            ParentId, ProductName, MinOrder, MaxOrder, Price
+        )
         await message.answer(res)
         await state.clear()
 
     else:
-        await message.answer('Я не знаю такой команды')
+        await message.answer("Я не знаю такой команды")
 
 
-@config.dp.callback_query(F.Text == 'DeleteProduct')
+@config.dp.callback_query(F.Text == "DeleteProduct")
 async def DeleteProduct(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer('Выберите категорию или подкатегорию', reply_markup=await Button.CategoryAndSubCategory('DeleteProduct'))
+    await callback.message.answer(
+        "Выберите категорию или подкатегорию",
+        reply_markup=await Button.CategoryAndSubCategory("DeleteProduct"),
+    )
 
 
-@config.dp.callback_query(F.Text == 'AddToCategory')
+@config.dp.callback_query(F.Text == "AddToCategory")
 async def AddToCategory(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer('Выберите категорию', reply_markup=await Button.CategoryMarkup('add'))
+    await callback.message.answer(
+        "Выберите категорию", reply_markup=await Button.CategoryMarkup("add")
+    )
 
 
-@config.dp.callback_query(F.Text == 'AddToSubCategory')
+@config.dp.callback_query(F.Text == "AddToSubCategory")
 async def AddToSubCategory(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer('Выберите подкатегорию', reply_markup=await Button.SubCategoryMarkup('add'))
+    await callback.message.answer(
+        "Выберите подкатегорию",
+        reply_markup=await Button.SubCategoryMarkup("add"),
+    )
 
 
-@config.dp.callback_query(F.Text.startswith == 'add_category')
+@config.dp.callback_query(F.Text.startswith == "add_category")
 async def Add_Category(call, state: FSMContext):
     global ParentId
     ParentId = int(call.data[13:])
-    await call.message.answer('Введите название продукта, минимальное и максимальное количество и цену')
+    await call.message.answer(
+        "Введите название продукта, минимальное и максимальное количество и"
+        " цену"
+    )
     await state.set_state(FSMFillFrom.fill_InfoProduct)
 
 
-@config.dp.callback_query(F.Text.startswith == 'DeleteProduct_category')
+@config.dp.callback_query(F.Text.startswith == "DeleteProduct_category")
 async def DeleteProduct_Category(call):
-    await call.message.answer('Вы выбрали категорию или подкатегорию')
+    await call.message.answer("Вы выбрали категорию или подкатегорию")
     ParentId = int(call.data[23:])
-    await call.message.answer('Выберите товар', reply_markup=await Button.CheckProduct('delete', ParentId))
+    await call.message.answer(
+        "Выберите товар",
+        reply_markup=await Button.CheckProduct("delete", ParentId),
+    )
 
 
-@config.dp.callback_query(F.Text.startswith == 'delete_product')
+@config.dp.callback_query(F.Text.startswith == "delete_product")
 async def Delete_Product(callback: CallbackQuery, state: FSMContext):
     ProductId = int(callback.data[15:])
     print(ProductId)

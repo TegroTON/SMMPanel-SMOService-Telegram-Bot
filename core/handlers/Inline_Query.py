@@ -1,42 +1,73 @@
-from core.config import config
-import database as db
 import hashlib
-from aiogram.types import InputTextMessageContent, InlineQueryResultArticle, InlineQuery
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-import main
+
 from aiogram import Bot, Router
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    InlineQuery,
+    InlineQueryResultArticle,
+    InputTextMessageContent,
+)
+
+import database as db
+from core.callback_factories.checks import CheckType
 
 QueryRouter = Router()
 
 
 @QueryRouter.inline_query()
 async def InlineQuery(inline_query: InlineQuery, bot: Bot) -> None:
-    text = inline_query.query
-    data = await db.GetCheckForUser(None, None, text)
-    Text = f'🧾<b>Мульти-чек на {data[2]}</b>\n' \
-           f'\n' \
-           f'<b>Внутри чек:</b> {data[3]} активация(й) по {data[2]}рублей'
-    input_content = InputTextMessageContent(message_text=Text, parse_mode="HTML")
-    result_id = hashlib.md5(text.encode()).hexdigest()
-    AllSum = int(data[2]) * int(data[3])
-    Item = InlineQueryResultArticle(
-        input_message_content=input_content,
-        id=result_id,
-        reply_markup=await Keyboard(data[4], data[2]),
-        title=f'Мульти-чек на {AllSum}рублей',
-        description=f'Одна активация: {data[2]}·{AllSum}·{data[3]}'
+    try:
+        check_number = int(inline_query.query)
+    except ValueError:
+        return
+
+    check_data = db.get_check_by_check_number(check_number)
+
+    if not check_data:
+        return
+
+    check_type = CheckType(check_data["typecheck"])
+    amount = round(check_data["sum"], 2)
+    check_link = check_data["url"]
+
+    if check_type == CheckType.personal:
+        title = "🧾<b>Персональный чек</b>"
+        description = f"Внутри {amount} руб"
+        text = f"🧾<b>Персональный чек</b>\n\n" f"Внутри {amount} руб"
+    else:
+        quantity = check_data["quantity"]
+        title = "🧾<b>Мульти-чек</b>"
+        description = f"Внутри {quantity} активация(й) по {amount} руб"
+        text = (
+            "🧾<b>Мульти-чек</b>\n\n"
+            f"Внутри {quantity} активация(й) по {amount} руб"
+        )
+
+    input_content = InputTextMessageContent(
+        message_text=text,
+        parse_mode="HTML",
     )
 
-    await bot.answer_inline_query(inline_query_id=inline_query.id,
-                                         results=[Item],
-                                         cache_time=1)
+    result_id = hashlib.md5(text.encode()).hexdigest()
+    item = InlineQueryResultArticle(
+        input_message_content=input_content,
+        id=result_id,
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text=f"Получить {amount} руб", url=f"{check_link}"
+                    )
+                ]
+            ]
+        ),
+        title=title,
+        description=description,
+    )
 
-
-async def Keyboard(link, Sum):
-    Button = [
-        [
-            InlineKeyboardButton(text=f'Получить {Sum} рублей', url=f'{link}')
-        ]
-    ]
-    KeyboardUrl = InlineKeyboardMarkup(inline_keyboard=Button)
-    return KeyboardUrl
+    await bot.answer_inline_query(
+        inline_query_id=inline_query.id,
+        results=[item],
+        cache_time=1,
+    )

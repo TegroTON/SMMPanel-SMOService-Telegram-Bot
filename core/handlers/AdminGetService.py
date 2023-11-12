@@ -1,48 +1,53 @@
-import os
-from aiogram import F
-from urllib.parse import urlencode
-from aiogram.filters import StateFilter
-from aiogram.filters.state import State, StatesGroup
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.filters.command import Command
-from aiogram.types import Message, CallbackQuery
-from core.keyboards import Button
+from aiogram.types import CallbackQuery, Message
+
 from core.config import config
-import database as db
-import validators
-import requests
-import json
-import time
-import hmac
-import hashlib
-import uuid
-from aiogram import Bot, Router
+from core.keyboards import Button
+
+from core.service_provider.manager import provider_manager
 
 AdminGetServiceRouter = Router()
 
 
-@AdminGetServiceRouter.message(F.text == 'Выбрать сервис для создания заказа')
+@AdminGetServiceRouter.message(F.text == "Выбрать сервис для создания заказа")
 async def CreateAnOrder(message: Message):
-    await message.answer('Выберите сервис с которого буду браться продукты и делаться заказы(значение по умолчанию Вместе)',
-                         reply_markup=Button.GetServiceKeyboard)
-    print(config.Service)
+    await message.answer(
+        "Выберите сервис с которого буду браться продукты и делаться заказы(значение по умолчанию Вместе)",
+        reply_markup=Button.GetServiceKeyboard,
+    )
 
 
-@AdminGetServiceRouter.callback_query(F.data == 'SmoService')
+@AdminGetServiceRouter.callback_query(F.data == "SmoService")
 async def CheckPay(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
-    config.Service = 'SmoService'
-    await callback.message.answer('Теперь сервис для обработки заказов SmoService')
+    # TODO: Temporary solution.
+    config.Service = "SmoService"
+    provider_manager.deactivate_service("SmmPanel")
+    provider_manager.activate_service_provider("SmoService")
+    await callback.message.answer(
+        "Теперь сервис для обработки заказов SmoService"
+    )
 
-@AdminGetServiceRouter.callback_query(F.data == 'SmmPanelService')
+
+@AdminGetServiceRouter.callback_query(F.data == "SmmPanelService")
 async def CheckPay(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
-    config.Service = 'SmmPanel'
-    await callback.message.answer('Теперь сервис для обработки заказов SmmPanel')
+    # TODO: Temporary solution.
+    config.Service = "SmmPanel"
+    provider_manager.deactivate_service("SmoService")
+    provider_manager.activate_service_provider("SmmPanel")
+    await callback.message.answer(
+        "Теперь сервис для обработки заказов SmmPanel"
+    )
 
 
-@AdminGetServiceRouter.callback_query(F.data == 'All_service')
+@AdminGetServiceRouter.callback_query(F.data == "All_service")
 async def CheckPay(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
-    config.Service = 'All'
-    await callback.message.answer('Теперь работает сразу два сервиса для обработки заказов')
+    # TODO: Temporary solution.
+    config.Service = "All"
+    provider_manager.activate_all_services()
+    await callback.message.answer(
+        "Теперь работает сразу два сервиса для обработки заказов"
+    )

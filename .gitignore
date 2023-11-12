@@ -1,0 +1,14 @@
+*__pycache__*
+.env
+
+.venv
+.vscode
+
+debug.log
+app.log
+
+dev
+
+database.db
+
+logs/*
