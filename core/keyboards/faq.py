@@ -12,7 +12,7 @@ def _create_faq_keyboard() -> InlineKeyboardMarkup:
         ),
         InlineKeyboardButton(
             text="💰 Рефералы",
-            callback_data="faq-help",
+            callback_data="earn",
         ),
         InlineKeyboardButton(
             text="📖 Главное меню",

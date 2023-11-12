@@ -21,7 +21,7 @@ OTHER_BOTS_PATH = os.getenv("OTHER_BOTS_PATH")
 
 
 # Debug
-DEBUG = True if os.getenv("DEBUG") == 1 else False
+DEBUG = True if int(os.getenv("DEBUG")) == 1 else False
 
 # Cryptobot
 CRYPTO_TOKEN = os.getenv("CRYPTO_TOKEN")
