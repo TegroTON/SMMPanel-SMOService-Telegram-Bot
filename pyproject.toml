@@ -9,7 +9,7 @@ packages = [{include = "smm_panel_telegram_bot"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-aiofiles = "23.1.0"
+aiofiles = "23.2.1"
 aiogram = "3.0.0rc2"
 aiohttp = "3.8.5"
 aiohttp-jinja2 = "1.5.1"
