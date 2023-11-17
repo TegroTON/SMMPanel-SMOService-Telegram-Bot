@@ -1,27 +1,25 @@
 <br/>
 <p align="center">
-  <a href="https://github.com/m1ja/SMMTestBot">
+  <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot">
     <img src="static/logo.png" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">Smoservice Bot</h3>
 
   <p align="center">
-    Система автоматизированной раскрутки и продвижения в социальных сетях❗️
+    Система автоматиизированного продвижения в социальных сетях.
     <br/>
     <br/>
-    <a href="https://github.com/m1ja/SMMTestBot"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
-    <a href="https://github.com/m1ja/SMMTestBot">View Demo</a>
-    .
-    <a href="https://github.com/m1ja/SMMTestBot/issues">Report Bug</a>
-    .
-    <a href="https://github.com/m1ja/SMMTestBot/issues">Request Feature</a>
+    <a href="https://github.comTegroTON/SMMPanel-SMOService-Telegram-Bot">View Demo</a>
+    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues">Report Bug</a>
+    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues">Request Feature</a>
   </p>
 </p>
 
-![Downloads](https://img.shields.io/github/downloads/m1ja/SMMTestBot/total) ![Contributors](https://img.shields.io/github/contributors/m1ja/SMMTestBot?color=dark-green) ![Issues](https://img.shields.io/github/issues/m1ja/SMMTestBot) ![License](https://img.shields.io/github/license/m1ja/SMMTestBot) 
+![Downloads](https://img.shields.io/github/downloads/TegroTON/SMMPanel-SMOService-Telegram-Bot/total) ![Contributors](https://img.shields.io/github/contributors/TegroTON/SMMPanel-SMOService-Telegram-Bot?color=dark-green) ![Issues](https://img.shields.io/github/issues/TegroTON/SMMPanel-SMOService-Telegram-Bot) ![License](https://img.shields.io/github/license/TegroTON/SMMPanel-SMOService-Telegram-Bot) 
 
 ## Table Of Contents
 
@@ -41,7 +39,7 @@
 
 ![Screen Shot](static/main_menu.png)
 
-🚀 SmmTegroTest_Bot - Ваш идеальный инструмент для продвижения в социальных сетях! Получайте больше подписчиков, просмотров и многого другого с легкостью и эффективностью.
+🚀 SMOService & RosMedia - Ваши идеальне инструменты для продвижения в социальных сетях! Получайте больше подписчиков, просмотров и многого другого с легкостью и эффективностью.
 
 Основные функции:
 * Новый заказ: Быстро и удобно создайте заказ на накрутку нужного параметра.
@@ -299,7 +297,7 @@ sudo systemctl status tgbot.service
 
 ## Roadmap
 
-Список предлагаемых функций (и известных проблем) см. в разделе ["Открытые вопросы"](https://github.com/m1ja/SMMTestBot/issues).
+Список предлагаемых функций (и известных проблем) см. в разделе ["Открытые вопросы"](https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues).
 
 
 ## Authors
