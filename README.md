@@ -4,18 +4,18 @@
     <img src="static/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">Smoservice Bot</h3>
+  <h3 align="center">Promotion on social networks via Telegram bot</h3>
 
   <p align="center">
-    Система автоматиизированного продвижения в социальных сетях.
+    An automated promotion system in social networks working through a Telegram bot using the API of the SmmPanel and SMOFast sites.
     <br/>
     <br/>
     <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
-    <a href="https://github.comTegroTON/SMMPanel-SMOService-Telegram-Bot">View Demo</a>
+    <a href="https://t.me/smoservicebot">View Demo</a>
     <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues">Report Bug</a>
-    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues">Request Feature</a>
+    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/pulls">Request Feature</a>
   </p>
 </p>
 
