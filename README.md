@@ -304,7 +304,9 @@ sudo systemctl status tgbot.service
 
 ## Authors
 
-* **m1ja** - *python developer* - [m1ja](https://github.com/m1ja) - *Разработка telegram*
+* **DeFiTON** - *CPO Telegram Bot* - [Jason Gatsby](https://github.com/DeFiTON) - *CPO*
+* **Dmitrii-Kopeikin** - *CPO Telegram Bot* - [Dmitrii Kopeikin](https://github.com/Dmitrii-Kopeikin) - *Middle DevOps Engineer*
+* **m1ja** - *Junior DevOps* - [Developer m1ja](https://github.com/m1ja) - *Junior DevOps*
 
 ## Acknowledgements
 
