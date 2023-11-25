@@ -2,13 +2,13 @@
 
 [[package]]
 name = "aiocryptopay"
-version = "0.3.2"
+version = "0.3.3"
 description = "@cryptobot api asynchronous python wrapper"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "aiocryptopay-0.3.2-py3-none-any.whl", hash = "sha256:0d75fb493eed77bab4f18a6d587cf25a75f3c214e30146a035afb35c50a8fd23"},
-    {file = "aiocryptopay-0.3.2.tar.gz", hash = "sha256:19e54a51a546d8bb04582f81ecf3866473cccbdfc1f1e8802037ba5931bb185e"},
+    {file = "aiocryptopay-0.3.3-py3-none-any.whl", hash = "sha256:e770f3f3c1ce5a85117ef7c1c971d8b9f97068589838a1b57f0d53332106bdd2"},
+    {file = "aiocryptopay-0.3.3.tar.gz", hash = "sha256:c36e4b828ebda4ad262a04788b3530c7f45d35e40833f62ae0f10e8e37bc9eac"},
 ]
 
 [package.dependencies]
