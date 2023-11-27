@@ -1,19 +1,16 @@
-import logging
 from typing import Any, Dict, List
-
-from validators import ValidationError
 
 import database as db
 from core.config import config
+from core.utils.coingecko_api import get_usd_rub_rate
 
-from .provider import ServiceParseError, ServiceProvider
-
-logger = logging.getLogger(__name__)
+from .provider import ServiceParseError, ServiceProvider, logger
 
 
 class SmmPanelProvider(ServiceProvider):
-    url = "https://smmpanel.ru/api/v1"
-    name = "SmmPanel"
+    url: str = "https://smmpanel.ru/api/v1"
+    name: str = "SmmPanel"
+    usd_rub_rate: float = config.BASE_USD_RUB_RATE
 
     def prepare_data_for_activate(
         self,
@@ -34,7 +31,7 @@ class SmmPanelProvider(ServiceProvider):
         response_data: Dict[str, Any],
     ) -> int:
         if "order" not in response_data:
-            raise ValidationError("Response not contains 'order'")
+            raise ValueError("Response not contains 'order'")
 
         return response_data["order"]
 
@@ -64,7 +61,7 @@ class SmmPanelProvider(ServiceProvider):
                 continue
 
             for external_id, status_data in response_data.items():
-                await self.update_check_status(
+                await self.update_order_status(
                     data=status_data,
                     internal_id=ids_dict[int(external_id)],
                 )
@@ -89,7 +86,7 @@ class SmmPanelProvider(ServiceProvider):
             or "start_count" not in response_data
             or "remains" not in response_data
         ):
-            raise ValidationError(
+            raise ValueError(
                 "Response not contains 'status' or 'charge' or 'start_count'"
                 " or 'remains':\n"
                 f"{response_data}"
@@ -99,12 +96,16 @@ class SmmPanelProvider(ServiceProvider):
 
     def calculate_refund_amount(
         self,
-        user_id: int,
         total_amount: float,
+        quantity: int,
         data: Dict[str, Any],
     ) -> float:
+        remains = int(data["remains"])
+        if remains == 0:
+            return 0
+
         return round(
-            float(data["charge"]) * float(data["remains"]),
+            total_amount / quantity * remains,
             config.BALANCE_PRECISION,
         )
 
@@ -117,7 +118,7 @@ class SmmPanelProvider(ServiceProvider):
     def get_data_for_parse(
         self,
         response_data: Dict[str, Any],
-    ) -> Dict[str, Any]:
+    ) -> Dict[int, Dict[str, Any]]:
         if "error" in response_data:
             raise ServiceParseError(
                 (
@@ -128,33 +129,69 @@ class SmmPanelProvider(ServiceProvider):
                 cause=response_data["error"],
             )
 
-        return response_data
+        return {
+            int(product_data["service"]): product_data
+            for product_data in response_data
+        }
+
+    async def update_product(
+        self,
+        existing_product: Dict[str, Any],
+        product: Dict[str, Any],
+    ):
+        if {
+            existing_product["name"],
+            existing_product["price"],
+            existing_product["minorder"],
+            existing_product["maxorder"],
+        } == {
+            product["name"],
+            await self.calc_price(product["rate"]),
+            int(product["min"]),
+            int(product["max"]),
+        }:
+            return
+
+        db.update_product(
+            service_id=product["service"],
+            min_quantity=product["min"],
+            max_quantity=product["max"],
+            price=await self.calc_price(product["rate"]),
+        )
+        logger.info("Product %s updated.", product["service"])
 
     async def parse_product_data(
         self,
         product_data: Dict[str, Any],
     ):
-        category = product_data["category"]
-        product_name = product_data["name"]
-        min_quantity = product_data["min"]
-        max_quantity = product_data["max"]
-        charge = product_data["rate"]
-        cost = round(
-            float(charge) / config.CHARGE_PER_COUNT * config.USD_RUB_RATE,
-            config.BALANCE_PRECISION,
+        category_id = db.add_category(name=product_data["category"])
+        db.add_product(
+            category_id=category_id,
+            name=product_data["name"],
+            min_quantity=product_data["min"],
+            max_quantity=product_data["max"],
+            price=await self.calc_price(product_data["rate"]),
+            service_id=product_data["service"],
+            service_provider=self.name,
         )
-        service_id = product_data["service"]
 
-        if "telegram" in category or "телеграм" in category.lower():
-            return
-
-        await db.AddCategory(category, self.name)
-        parent_id = await db.GetIdParentCategory(category, self.name, None)
-        await db.AddProduct(
-            parent_id,
-            product_name,
-            min_quantity,
-            max_quantity,
-            cost,
-            service_id,
+    async def calc_price(
+        self,
+        charge: float,
+    ) -> float:
+        return round(
+            float(charge) / config.CHARGE_PER_COUNT * self.usd_rub_rate,
+            config.PRODUCT_PRICE_PRECISION,
         )
+
+    async def parse_services(self) -> str:
+        try:
+            new_rate = await get_usd_rub_rate()
+        except Exception as error:
+            logger.error("Failed to parse %s.", self.name)
+            logger.exception(error)
+
+        if not self.usd_rub_rate or abs(self.usd_rub_rate - new_rate) > 1:
+            self.usd_rub_rate = new_rate
+
+        return await super().parse_services()

@@ -8,6 +8,7 @@ from core.callback_factories.my_orders import (
 )
 from core.keyboards.my_orders import create_order_info_keyboard
 from core.service_provider.order_status import OrderStatus
+from core.text_manager import text_manager as tm
 
 order_info_router = Router(name="order_info_router")
 
@@ -35,24 +36,22 @@ async def process_order_info(
 
     if not order:
         await message.answer(
-            "Заказ не найден!",
+            text=tm.message.my_orders_not_found(),
         )
         return
 
     reply_function = message.edit_text if is_callback else message.answer
 
     await reply_function(
-        text=(
-            "<b>Информация о заказе:</b>\n"
-            f"{order['name']}\n"
-            # "{description}\n\n"
-            f"ID:         {order['id']}\n"
-            f"Export ID:  {order['order_id'] or 'Присваивается после оплаты'}"
-            "\n"
-            f"Статус:     {OrderStatus(order['status']).name_with_icon_ru}\n"
-            f"Ссылка:     {order['url']}\n"
-            f"Количество: {order['quantity']}\n"
-            f"Стоимость:  {order['sum']}\n"
+        text=tm.message.order_info().format(
+            name=order["name"],
+            id=order["id"],
+            export_id=order["order_id"]
+            or tm.message.order_info_not_exported(),
+            status=OrderStatus(order["status"]).name_with_icon_ru,
+            url=order["url"],
+            quantity=order["quantity"],
+            price=order["sum"],
         ),
         reply_markup=create_order_info_keyboard(
             data=callback_data,

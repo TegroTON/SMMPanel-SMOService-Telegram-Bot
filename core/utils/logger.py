@@ -2,7 +2,7 @@ import logging
 import sys
 from logging.handlers import RotatingFileHandler
 
-from core.config import config
+from core.utils.camel_to_snake import camel_to_snake
 
 
 def init_logger():
@@ -36,18 +36,21 @@ def init_logger():
         handlers=[
             stdout_handler,
             file_error_handler,
+            file_warning_handler,
             file_info_handler,
         ],
     )
 
-    if config.DEBUG:
-        stdout_handler.setLevel(logging.DEBUG)
 
-        file_debug_handler = RotatingFileHandler(
-            "./logs/debug.log",
-            maxBytes=1000000,
-            backupCount=2,
+def create_logger(name: str):
+    logger = logging.getLogger(name)
+    handler = RotatingFileHandler(f"./logs/{camel_to_snake(name)}.log")
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
-        file_debug_handler.setLevel(logging.DEBUG)
+    )
+    logger.addHandler(handler)
 
-        logging.getLogger().addHandler(file_debug_handler)
+    return logger

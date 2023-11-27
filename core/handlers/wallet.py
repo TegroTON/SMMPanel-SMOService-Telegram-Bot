@@ -1,3 +1,5 @@
+import os
+
 from aiogram import Bot, F, Router
 from aiogram.filters import or_f
 from aiogram.fsm.context import FSMContext
@@ -9,16 +11,20 @@ import database as db
 from core.callback_factories.wallet import WalletAction, WalletCallbackData
 from core.config import config
 from core.keyboards.wallet import (
-    choose_replenish_amount_keyboard,
+    create_choose_replenish_amount_keyboard,
+    create_history_keyboard,
     create_pay_keyboard,
-    history_keyboard,
-    wallet_keyboard,
+    create_wallet_keyboard,
 )
-from core.payment_system.cryptopay import register_crypto_paylink
-from core.payment_system.tegro_money import register_tegro_paylink
+from core.payment_system.cloudpayments import cloudpayments
+from core.payment_system.cryptopay import cryptopay
+from core.payment_system.tegro_money import tegro_money
 from core.payment_system.tegro_payment_system_constants import (
     TegroPaymentSystem,
 )
+
+# from core.payment_system.ton_wallet import register_ton_wallet_paylink
+from core.text_manager import text_manager as tm
 
 balance_router = Router()
 
@@ -41,14 +47,11 @@ async def wallet_callback_handler(
     await state.clear()
 
     balance = round(
-        (await db.GetBalance(callback.from_user.id))[0],
+        db.get_user_balance(callback.from_user.id),
         config.BALANCE_PRECISION,
     )
 
-    text = (
-        f"Ваш баланс: {balance} руб.\n"
-        "💳 Выберите действие или введите сумму пополнения."
-    )
+    text = tm.message.wallet().format(balance=balance)
 
     await state.set_state(WalletState.get_amount)
 
@@ -59,13 +62,13 @@ async def wallet_callback_handler(
     ):
         await callback.message.edit_text(
             text,
-            reply_markup=wallet_keyboard,
+            reply_markup=create_wallet_keyboard(),
         )
         return
 
     await callback.message.answer(
         text,
-        reply_markup=wallet_keyboard,
+        reply_markup=create_wallet_keyboard(),
     )
 
 
@@ -77,8 +80,8 @@ async def replenish_balance_callback_handler(
     state: FSMContext,
 ):
     await callback.message.edit_text(
-        "💳 Выберите или введите сумму для пополнения:",
-        reply_markup=choose_replenish_amount_keyboard,
+        text=tm.message.wallet_get_sum(),
+        reply_markup=create_choose_replenish_amount_keyboard(),
     )
     await state.set_state(WalletState.get_amount)
 
@@ -97,7 +100,7 @@ async def get_amount_callback_handler(
         user_id=callback.from_user.id,
         username=callback.from_user.username,
         amount=callback_data.amount,
-        bot_token=callback.bot.token,
+        bot=callback.bot,
     )
 
 
@@ -105,15 +108,16 @@ async def get_amount_callback_handler(
 async def get_amount_handler(
     message: Message,
     state: FSMContext,
-    bot: Bot,
 ):
     try:
         amount = float(message.text)
-        if amount <= config.MIN_REPLENISH_AMOUNT:
+        if amount < config.MIN_REPLENISH_AMOUNT:
             raise ValueError
     except ValueError:
         await message.answer(
-            "Минимальная сумма пополнения - {config.MIN_REPLENISH_AMOUNT} руб!"
+            tm.message.wallet_replenish_min_sum().format(
+                min_sum=config.MIN_REPLENISH_AMOUNT
+            )
         )
         return
 
@@ -123,7 +127,7 @@ async def get_amount_handler(
         user_id=message.from_user.id,
         username=message.from_user.username,
         amount=amount,
-        bot_token=bot.token,
+        bot=message.bot,
     )
 
 
@@ -133,38 +137,54 @@ async def process_get_amount(
     user_id: int,
     username: str,
     amount: float,
-    bot_token: str,
+    bot: Bot,
 ):
-    tegro_paylink_card = register_tegro_paylink(
+    bot_username = (await bot.get_me()).username
+
+    paylinks = {}
+
+    paylinks["💳 Банковской картой"] = tegro_money.register_paylink(
         amount=amount,
         user_id=user_id,
         username=username,
-        bot_token=bot_token,
+        bot_username=bot_username,
+        bot_token=bot.token,
     )
 
-    tegro_paylink_usdt = register_tegro_paylink(
+    paylinks["💲 USDT"] = tegro_money.register_paylink(
         amount=amount,
         user_id=user_id,
         username=username,
-        bot_token=bot_token,
-        payment_system=TegroPaymentSystem.TEGRO_PAY,
+        bot_username=bot_username,
+        bot_token=bot.token,
+        payment_system=TegroPaymentSystem.TETHER_USDT_BNB_SMART_CHAIN,
     )
 
-    crypto_paylink = await register_crypto_paylink(
+    if user_id == config.ADMIN_ID:
+        paylinks["📱 CloudPayments"] = await cloudpayments.register_paylink(
+            amount=amount,
+            user_id=user_id,
+            bot_username=bot_username,
+            bot_token=bot.token,
+            username=username,
+        )
+
+    paylinks["💎 Crypto Bot"] = await cryptopay.register_paylink(
         amount=amount,
         user_id=user_id,
-        bot_token=bot_token,
+        bot_username=bot_username,
+        bot_token=bot.token,
     )
+
+    # paylinks["👛 Wallet Pay"] = await register_ton_wallet_paylink(
+    #     amount=amount,
+    #     user_id=user_id,
+    #     bot_username=bot_username,
+    # )
 
     await message.answer(
-        text=(f"Сумма пополнения: {amount} руб.\n" "Выберите способ оплаты"),
-        reply_markup=create_pay_keyboard(
-            [
-                ("💳Банковской картой", tegro_paylink_card),
-                ("💰USDT (Tegro Pay)", tegro_paylink_usdt),
-                ("💎Crypto Bot", crypto_paylink),
-            ],
-        ),
+        text=tm.message.wallet_replenish_choose_method().format(amount=amount),
+        reply_markup=create_pay_keyboard(paylinks=paylinks),
     )
 
     await state.clear()
@@ -180,7 +200,7 @@ async def balance_history_callback_handler(
     await state.clear()
 
     Datas = await db.Get_History(callback.from_user.id)
-    TextAnswer = ""
+    operations = ""
     date = ""
     Id = 0
     if Datas:
@@ -189,27 +209,26 @@ async def balance_history_callback_handler(
                 Id = data[0]
                 date = data[4]
                 month = data[4].split("-")
-                TextAnswer = f"<b>• {month[2]}.{month[1]}.{month[0]}</b>\n"
+                operations = f"<b>• {month[2]}.{month[1]}.{month[0]}</b>\n"
         for data in Datas:
             if data[4] == date:
                 Time = data[5].split(":")
                 if data[2] > 0:
-                    TextAnswer += (
+                    operations += (
                         f"<i>{Time[0]}:{Time[1]} {data[3]}"
                         f" +{data[2]} рублей</i>\n"
                     )
                 else:
-                    TextAnswer += (
+                    operations += (
                         f"<i>{Time[0]}:{Time[1]} {data[3]}"
                         f" {data[2]} рублей</i>\n"
                     )
         await callback.message.edit_text(
-            TextAnswer,
-            reply_markup=history_keyboard,
+            text=tm.message.wallet_history().format(operations=operations),
+            reply_markup=create_history_keyboard(),
         )
     else:
-        TextAnswer = "У вас нет операций по счету"
-        await callback.answer(TextAnswer)
+        await callback.answer(tm.message.wallet_no_history())
 
 
 @balance_router.callback_query(
@@ -217,7 +236,6 @@ async def balance_history_callback_handler(
 )
 async def balance_history_document_handler(
     callback: CallbackQuery,
-    state: FSMContext,
     bot: Bot,
 ):
     Datas = await db.Get_History(callback.from_user.id)
@@ -236,3 +254,5 @@ async def balance_history_document_handler(
     file.close()
     document = FSInputFile(f"отчет_{callback.from_user.id}.txt")
     await bot.send_document(callback.from_user.id, document)
+
+    os.remove(file.name)

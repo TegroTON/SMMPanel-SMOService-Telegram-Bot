@@ -1,6 +1,6 @@
-from . import checks
+from . import cheques
 
 
 __all__ = [
-    "checks",
+    "cheques",
 ]

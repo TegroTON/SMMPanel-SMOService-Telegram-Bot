@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Dict
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from core.callback_factories.my_orders import (
@@ -8,46 +8,47 @@ from core.callback_factories.my_orders import (
 
 from core.callback_factories.wallet import WalletAction, WalletCallbackData
 from core.config import config
+from core.text_manager import text_manager as tm
 
 
-def _create_wallet_keyboard() -> InlineKeyboardMarkup:
+def create_wallet_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
     builder.row(
         InlineKeyboardButton(
-            text="💳 Пополнить баланс",
+            text=tm.button.replenish(),
             callback_data=WalletCallbackData(
                 action=WalletAction.replenish
             ).pack(),
         ),
         InlineKeyboardButton(
-            text="📨 История операций",
+            text=tm.button.history(),
             callback_data=WalletCallbackData(
                 action=WalletAction.history
             ).pack(),
         ),
         InlineKeyboardButton(
-            text="📋 Мои заказы",
+            text=tm.button.my_orders(),
             callback_data=MyOrdersCallbackData(
                 action=MyOrdersAction.VIEW_ORDERS
             ).pack(),
         ),
         InlineKeyboardButton(
-            text="💰 Рефералы",
+            text=tm.button.referrals(),
             callback_data="earn",
         ),
         InlineKeyboardButton(
-            text="📖 Главное меню",
+            text=tm.button.main_menu(),
             callback_data="main_menu",
         ),
     )
 
-    builder.adjust(1, 2, 1)
+    builder.adjust(2, 2, 1)
 
     return builder.as_markup()
 
 
-def _create_replenish_amount_keyboard():
+def create_choose_replenish_amount_keyboard():
     builder = InlineKeyboardBuilder()
 
     for amount in config.REPLENISH_AMOUNT_VARIANTS:
@@ -63,7 +64,7 @@ def _create_replenish_amount_keyboard():
 
     builder.row(
         InlineKeyboardButton(
-            text="Назад",
+            text=tm.button.back(),
             callback_data=WalletCallbackData(
                 action=WalletAction.choose_action,
             ).pack(),
@@ -75,7 +76,7 @@ def _create_replenish_amount_keyboard():
     return builder.as_markup()
 
 
-def _create_history_keyboard() -> InlineKeyboardMarkup:
+def create_history_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
     builder.row(
@@ -89,7 +90,7 @@ def _create_history_keyboard() -> InlineKeyboardMarkup:
 
     builder.row(
         InlineKeyboardButton(
-            text="Назад",
+            text=tm.button.back(),
             callback_data=WalletCallbackData(
                 action=WalletAction.choose_action
             ).pack(),
@@ -99,20 +100,28 @@ def _create_history_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def create_pay_keyboard(data: List[Tuple[str, str]]):
+def create_pay_keyboard(
+    paylinks: Dict[str, str],
+):
     builder = InlineKeyboardBuilder()
 
-    for title, url in data:
+    for title, paylink in paylinks.items():
+        if not paylink:
+            continue
         builder.row(
             InlineKeyboardButton(
                 text=title,
-                url=url,
+                url=paylink,
             )
         )
 
+    builder.row(
+        InlineKeyboardButton(
+            text=tm.button.back(),
+            callback_data=WalletCallbackData(
+                action=WalletAction.choose_action,
+            ).pack(),
+        )
+    )
+
     return builder.as_markup()
-
-
-wallet_keyboard = _create_wallet_keyboard()
-choose_replenish_amount_keyboard = _create_replenish_amount_keyboard()
-history_keyboard = _create_history_keyboard()

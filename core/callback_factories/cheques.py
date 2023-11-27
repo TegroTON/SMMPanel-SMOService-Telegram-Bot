@@ -2,7 +2,7 @@ from aiogram.filters.callback_data import CallbackData
 from enum import Enum
 
 
-class CheckType(Enum):
+class ChequeType(Enum):
     personal = "personal"
     multi = "multi"
 
@@ -15,7 +15,7 @@ class SubscriptionType(Enum):
 
 
 #  Values are shortened to minimize the size of the callback data.
-class CheckAction(Enum):
+class ChequeAction(Enum):
     choose_type = "c_t"  # "choose_type"
     choose_action = "c_a"  # "choose_action"
     view_checks = "v"  # "view"
@@ -34,12 +34,16 @@ class CheckAction(Enum):
     delete_subscription_confirmed = "d_s_c"  # "delete_subscription_confirmed"
 
 
-class CheckCallbackData(CallbackData, prefix="chk"):  # prefix="check"
-    action: CheckAction | None = CheckAction.choose_type
-    type: CheckType | None = None
+class ChequeCallbackData(CallbackData, prefix="chk"):  # prefix="check"
+    action: ChequeAction | None = ChequeAction.choose_type
+    type: ChequeType | None = None
     id: int | None = None
     amount: float | None = None
     quantity: int | None = None
     number: int | None = None
     subscription_type: SubscriptionType | None = None
     chat_id: int | None = None
+
+
+class CheckSubscribesCallbackData(CallbackData, prefix="chk_sbscrbs"):
+    cheque_number: int

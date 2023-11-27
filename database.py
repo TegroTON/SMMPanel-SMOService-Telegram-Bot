@@ -11,9 +11,13 @@ connection = sq.connect("./database.db")
 
 
 def sql_start():
+    if connection:
+        logger.info("Database connected successfully")
+    else:
+        raise Exception("Critical error! Failed to connect to database!")
+
     cursor = connection.cursor()
-    # if connection:
-    logger.info("Database connected successfully")
+
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS category (
             id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -30,7 +34,9 @@ def sql_start():
             minorder INTEGER,
             maxorder INTEGER NOT NULL,
             price INTEGER NOT NULL,
-            service_id INTEGER NOT NULL
+            service_id INTEGER NOT NULL,
+            service_provider TEXT NOT NULL,
+            is_active BOOLEAN NOT NULL DEFAULT 1
         )"""
     )
     cursor.execute(
@@ -55,7 +61,8 @@ def sql_start():
             user_id INTEGER NOT NULL,
             balance FLOAT NOT NULL,
             check_activate INTEGER,
-            affiliate_id INTEGER
+            affiliate_id INTEGER,
+            bot_id INTEGER
         )"""
     )
     cursor.execute(
@@ -76,14 +83,16 @@ def sql_start():
             linkcheckid INTEGER NOT NULL,
             UserActivate TEXT,
             typecheck TEXT NOT NULL,
-            id_channel TEXT
+            id_channel TEXT,
+            total_quantity INTEGER NOT NULL
         )"""
     )
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS Bots(
             id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             api_key TEXT NOT NULL,
-            id_user INTEGER NOT NULL
+            id_user INTEGER NOT NULL,
+            bot_username TEXT
         )"""
     )
     cursor.execute(
@@ -134,96 +143,105 @@ def dict_factory(cursor, row):
     return data
 
 
-async def AddCategory(NameCategory, Service, ParentID=None):
+def add_category(
+    name: str,
+    parent_id: int | None = None,
+) -> int | None:
     cursor = connection.cursor()
-    Category = cursor.execute(
-        f"SELECT name FROM category WHERE name = '{NameCategory}'"
-        f"AND parent_id = '{ParentID}'"
+    result = cursor.execute(
+        f"SELECT id FROM category WHERE name = '{name}'"
+        f"AND parent_id = '{parent_id}'"
     ).fetchone()
-    if not Category:
-        cursor.execute(
-            f"INSERT INTO category (name, parent_id, service)"
-            f" VALUES ('{NameCategory}', '{ParentID}', '{Service}')"
-        )
+    if not result:
+        result = cursor.execute(
+            f"INSERT INTO category (name, parent_id)"
+            f" VALUES ('{name}', '{parent_id}')"
+            " RETURNING RowId"
+        ).fetchone()
         connection.commit()
-        res = "Категория успешно добавлена"
-        return res
-    else:
-        res = "Такая категория уже существует"
-        return res
+
+    return result[0]
 
 
-async def GetIdParentCategory(NameCategory, Service, IdCategory):
-    cursor = connection.cursor()
-    NameCategory = cursor.execute(
-        f"SELECT id FROM category WHERE name = '{NameCategory}'"
-        f" AND service = '{Service}' AND parent_id = '{IdCategory}'"
-    )
-    return NameCategory.fetchone()[0]
-
-
-async def GetCategory(service=None):
-    cursor = connection.cursor()
-    if service is None:
-        cursor.execute("""SELECT id, name, parent_id FROM category""")
-    else:
-        cursor.execute(
-            f"""SELECT id, name, parent_id FROM category
-            WHERE service = '{service}'"""
-        )
-    try:
-        return cursor.fetchall()
-    except Exception as e:
-        print(e)
-        return None
-
-
-async def GetSubCategory(IdCategory):
-    cursor = connection.cursor()
-    Category = cursor.execute(
-        f"""SELECT id, name, parent_id FROM category
-        WHERE parent_id = '{IdCategory}'"""
-    ).fetchall()
-    if not Category:
-        return None
-    else:
-        return Category
-
-
-async def DeleteCategory(id):
-    cursor = connection.cursor()
-    cursor.execute(
-        f"DELETE FROM category WHERE id = '{id}' OR parent_id = '{id}'"
-    )
-    res = "категории и подкатегории успешно удаленны"
-    connection.commit()
-    return res
-
-
-async def GetServiceCategory(id):
-    cursor = connection.cursor()
-    service = cursor.execute(
-        f"""SELECT service FROM category WHERE id = '{id}'"""
-    ).fetchone()[0]
-    return service
-
-
-async def AddProduct(
-    ParentID, ProductName, MinOrder, MaxOrder, Price, ServiceId
+def get_subcategories(
+    name,
+    category_id,
 ):
     cursor = connection.cursor()
-    Category = cursor.execute(
+    name = cursor.execute(
+        f"SELECT id FROM category WHERE name = '{name}'"
+        f" AND parent_id = '{category_id}'"
+    )
+    return name.fetchone()[0]
+
+
+def get_products(
+    provider_name: str,
+) -> List[Dict[str, Any]]:
+    cursor = connection.cursor()
+    cursor.row_factory = dict_factory
+
+    products = cursor.execute(
+        f"SELECT * FROM product WHERE service_provider = '{provider_name}'"
+    ).fetchall()
+
+    return products
+
+
+def set_product_is_active(
+    product_id: int,
+    is_active: bool,
+):
+    cursor = connection.cursor()
+    cursor.execute(
+        f"""UPDATE product SET is_active = '{int(is_active)}'
+        WHERE id = '{product_id}'"""
+    )
+    connection.commit()
+
+
+def update_product(
+    service_id: int,
+    min_quantity: int,
+    max_quantity: int,
+    price: int,
+):
+    cursor = connection.cursor()
+    cursor.execute(
+        f"""UPDATE product SET
+        minorder = '{min_quantity}',
+        maxorder = '{max_quantity}',
+        price = '{price}'
+        WHERE service_id = '{service_id}'"""
+    )
+    connection.commit()
+
+
+def add_product(
+    category_id: int,
+    name: str,
+    min_quantity: int,
+    max_quantity: int,
+    price: float,
+    service_id: int,
+    service_provider: str,
+    is_active: bool = True,
+):
+    cursor = connection.cursor()
+    product = cursor.execute(
         f"""SELECT name FROM product
-        WHERE category_id = '{ParentID}' AND name = '{ProductName}'"""
+        WHERE category_id = '{category_id}' AND name = '{name}'"""
     ).fetchone()
-    if not Category:
+    if not product:
         cursor.execute(
             f"""INSERT INTO product (
-                    category_id, name, minorder, maxorder, price, service_id
+                    category_id, name, minorder, maxorder, price, service_id,
+                    service_provider
                 ) VALUES (
-                    '{ParentID}', '{ProductName}', '{MinOrder}', '{MaxOrder}',
-                    '{Price}', '{ServiceId}'
-                    )"""
+                    '{category_id}', '{name}', '{min_quantity}',
+                    '{max_quantity}', '{price}', '{service_id}',
+                    '{service_provider}'
+                )"""
         )
         connection.commit()
         res = "товар успешно добавлен"
@@ -233,69 +251,15 @@ async def AddProduct(
         return res
 
 
-async def GetProduct(ParentId):
-    cursor = connection.cursor()
-    product = cursor.execute(
-        f"""SELECT * FROM product WHERE category_id = '{ParentId}'"""
-    )
-    if not product:
-        return None
-    else:
-        return product.fetchall()
-
-
-async def GetProductServiceId(ProductId):
-    cursor = connection.cursor()
-    ServiceId = cursor.execute(
-        f"""SELECT service_id FROM product WHERE id = '{ProductId}'"""
-    ).fetchone()
-    return ServiceId
-
-
-async def GetOneProduct(product_id):
-    cursor = connection.cursor()
-    product = cursor.execute(
-        f"""SELECT * FROM product WHERE id = '{product_id}'"""
-    ).fetchone()
-    if not product:
-        return None
-    else:
-        return product
-
-
-async def DeleteProduct(ProductId):
-    cursor = connection.cursor()
-    cursor.execute(f"DELETE FROM product WHERE id = '{ProductId}'")
-    res = "Товар успешно удален успешно удаленны"
-    connection.commit()
-    return res
-
-
-async def GetBalance(user_id):
-    cursor = connection.cursor()
-    balance = cursor.execute(
-        f"""SELECT balance FROM user WHERE user_id = '{user_id}'"""
-    ).fetchone()
-    return balance
-
-
-async def CheckUserInBalance(user_id):
-    cursor = connection.cursor()
-    checkUser = cursor.execute(
-        f"""SELECT balance FROM user WHERE user_id = '{user_id}'"""
-    ).fetchone()
-    if not checkUser:
-        return False
-    else:
-        return True
-
-
-async def add_user(user_id: int):
+async def add_user(
+    user_id: int,
+    bot_id: int,
+):
     cursor = connection.cursor()
 
     cursor.execute(
-        f"""INSERT INTO user (user_id, balance, check_activate)
-        VALUES ('{user_id}', '{0}', '{0}')"""
+        f"""INSERT INTO user (user_id, balance, check_activate, bot_id)
+        VALUES ('{user_id}', '{0}', '{0}', '{bot_id}')"""
     )
 
     connection.commit()
@@ -313,11 +277,6 @@ def update_user_affiliate(
     )
 
     connection.commit()
-
-
-async def GetUsers():
-    cursor = connection.cursor()
-    return cursor.execute("""SELECT user_id FROM user""")
 
 
 async def UpdateBalance(user_id, Sum):
@@ -338,137 +297,12 @@ async def WriteOffTheBalance(user_id, Sum):
     connection.commit()
 
 
-async def AddOrders(
-    user_id, product_id, quantity, Sum, ServiceId, url, order_id, status
-):
-    cursor = connection.cursor()
-    date = datetime.datetime.now()
-    cursor.execute(
-        f"""INSERT INTO orders (
-            user_id, product_id, service_id, quantity, sum, url, date,
-            order_id, status
-            ) VALUES (
-                '{user_id}', '{product_id}', '{ServiceId}','{quantity}',
-                '{Sum}', '{url}','{date}', '{order_id}', '{status}'
-                )"""
-    )
-    connection.commit()
-    res = "Заказ получен"
-    return res
-
-
-async def UpdateOrderStatus(order_id, status):
-    cursor = connection.cursor()
-    cursor.execute(
-        f"""UPDATE orders SET status = '{status}'
-        WHERE order_id = '{order_id}'"""
-    )
-    connection.commit()
-
-
-async def GetProductName(id):
-    cursor = connection.cursor()
-    name = cursor.execute(
-        f"""SELECT name, category_id FROM product WHERE id = '{id}'"""
-    ).fetchone()
-    return name
-
-
-async def GetOrders(user_id=None, Id=None, Link=None):
-    cursor = connection.cursor()
-    if Id is not None:
-        orders = cursor.execute(
-            f"""SELECT * FROM orders WHERE order_id = '{Id}'"""
-        ).fetchall()
-    elif Link is not None:
-        orders = cursor.execute(
-            f"""SELECT * FROM orders WHERE url = '{Link}'"""
-        ).fetchall()
-    elif user_id is not None:
-        orders = cursor.execute(
-            f"""SELECT * FROM orders WHERE user_id = '{user_id}'"""
-        ).fetchall()
-    elif user_id is None:
-        orders = cursor.execute("""SELECT * FROM orders""").fetchall()
-    return orders
-
-
-async def Orders():
-    cursor = connection.cursor()
-    orders = cursor.execute("""SELECT * FROM orders""").fetchall()
-    return orders
-
-
 async def is_user_exists(user_id: int) -> bool:
     cursor = connection.cursor()
     result = cursor.execute(
         f"""SELECT id FROM user WHERE user_id = '{user_id}'"""
     ).fetchall()
     return bool(len(result))
-
-
-async def AddUserReferral(user_id, referral_id=None):
-    cursor = connection.cursor()
-    if referral_id is not None:
-        cursor.execute(
-            f"""INSERT INTO Referral (user_id, referral_id) VALUES (
-                '{user_id}', '{referral_id}')"""
-        )
-    else:
-        cursor.execute(
-            f"""INSERT INTO Referral (user_id) VALUES ('{user_id}')"""
-        )
-
-    connection.commit()
-
-
-async def GetUserCheckActivate(user_id):
-    cursor = connection.cursor()
-    return cursor.execute(
-        f"""SELECT check_activate FROM user
-        WHERE user_id = '{user_id}'"""
-    ).fetchone()[0]
-
-
-async def UpdateCheckActivate(user_id):
-    cursor = connection.cursor()
-    cursor.execute(
-        f"""UPDATE user SET check_activate = check_activate + 1
-        WHERE user_id = '{user_id}'"""
-    )
-    connection.commit()
-
-
-async def CountReferrals(user_id):
-    cursor = connection.cursor()
-    return cursor.execute(
-        f"""SELECT COUNT(id) as count FROM Referral
-        WHERE referral_id = '{user_id}'"""
-    ).fetchone()[0]
-
-
-async def GetReferral(user_id):
-    cursor = connection.cursor()
-    return cursor.execute(
-        f"""SELECT referral_id FROM Referral WHERE user_id = '{user_id}'"""
-    ).fetchone()[0]
-
-
-async def UpdateMoneyReferral(user_id, sum):
-    cursor = connection.cursor()
-    cursor.execute(
-        f"""UPDATE Referral SET referral_money = '{sum}'
-        WHERE user_id = '{user_id}'"""
-    )
-    connection.commit()
-
-
-async def GetMoneyReferral(user_id):
-    cursor = connection.cursor()
-    money = cursor.execute(
-        f"""SELECT referral_money FROM Referral WHERE user_id = '{user_id}'"""
-    ).fetchone()[0]
-    return money
 
 
 async def AddChanel(channel_id, Name, Url):
@@ -484,7 +318,7 @@ async def AddChanel(channel_id, Name, Url):
     connection.commit()
 
 
-async def GetChannelTittle(ChannelId):
+async def GetChannelTitle(ChannelId):
     cursor = connection.cursor()
     channel = cursor.execute(
         f"""SELECT channel_name FROM Channel
@@ -517,14 +351,15 @@ async def AddCheck(
     linkcheckid,
     TypeCheck,
     quantity=1,
+    total_quantity=1,
 ) -> int:
     cursor = connection.cursor()
     cursor.execute(
         f"""INSERT INTO CheckForUser (
-            from_user_id, sum, quantity, url, linkcheckid, typecheck)
-            VALUES (
+            from_user_id, sum, quantity, url, linkcheckid, typecheck,
+            total_quantity) VALUES (
                 '{user_id}', '{price}', '{quantity}', '{url}', '{linkcheckid}',
-                '{TypeCheck}')
+                '{TypeCheck}', '{total_quantity}')
             RETURNING RowId
             """
     )
@@ -549,21 +384,6 @@ async def GetCheckForUser(user_id=None, CheckId=None, LinkCheckId=None):
             WHERE linkcheckid = '{LinkCheckId}'"""
         ).fetchone()
     return check
-
-
-async def DeleteCheck(CheckId=None, Url=None, LinkCheckId=None):
-    cursor = connection.cursor()
-    if CheckId is not None:
-        cursor.execute(f"DELETE FROM CheckForUser WHERE id = '{CheckId}'")
-        connection.commit()
-    elif Url is not None:
-        cursor.execute(f"DELETE FROM CheckForUser WHERE url = '{Url}'")
-        connection.commit()
-    elif LinkCheckId is not None:
-        cursor.execute(
-            f"DELETE FROM CheckForUser WHERE linkcheckid = '{LinkCheckId}'"
-        )
-        connection.commit()
 
 
 async def UpdateQuantityAndActivate(LinkIdCheck, IdActivate):
@@ -610,14 +430,8 @@ async def DeleteChannelFromCheck(RealCheckId, ChannelID):
         f"""SELECT id_channel FROM CheckForUser WHERE id = '{RealCheckId}'"""
     ).fetchone()[0]
     IDDeletes = ChanID.split(",")
-    print(ChannelID)
-    print(IDDeletes)
     IDDeletes.remove(str(ChannelID))
     Id_channel = ",".join(IDDeletes)
-    # Id_channel = ""
-    # for IDdelete in IDDeletes:
-    #     if IDdelete != "" and int(IDdelete) != int(ChannelID):
-    #         Id_channel = f"{Id_channel},{IDdelete}"
     cursor.execute(
         f"""UPDATE CheckForUser SET id_channel = '{Id_channel}'
         WHERE id = '{RealCheckId}'"""
@@ -625,15 +439,19 @@ async def DeleteChannelFromCheck(RealCheckId, ChannelID):
     connection.commit()
 
 
-async def AddBots(api_token, id_user):
+def add_bot(
+    api_token: str,
+    id_user: int,
+    bot_username: str,
+):
     cursor = connection.cursor()
     Bots = cursor.execute(
         f"SELECT * FROM Bots WHERE api_key = '{api_token}'"
     ).fetchone()
     if not Bots:
         cursor.execute(
-            f"""INSERT INTO Bots (api_key, id_user) VALUES (
-                '{api_token}', '{id_user}')"""
+            f"""INSERT INTO Bots (api_key, id_user, bot_username) VALUES (
+                '{api_token}', '{id_user}', '{bot_username}')"""
         )
         connection.commit()
         return True
@@ -641,41 +459,9 @@ async def AddBots(api_token, id_user):
         return False
 
 
-async def AllBotsForUser(id_user):
-    cursor = connection.cursor()
-    Bots = cursor.execute(
-        f"SELECT * FROM Bots WHERE id_user = '{id_user}'"
-    ).fetchall()
-    return Bots
-
-
-async def DeleteBot(api_key):
+def delete_bot(api_key):
     cursor = connection.cursor()
     cursor.execute(f"DELETE FROM Bots WHERE api_key = '{api_key}'")
-    connection.commit()
-
-
-async def Refund(id):
-    cursor = connection.cursor()
-    cursor.execute(f"""UPDATE orders SET refund = 1 WHERE id = '{id}' """)
-    connection.commit()
-
-
-async def GetRefundStatus(id):
-    cursor = connection.cursor()
-    Status = cursor.execute(
-        f"""SELECT refund FROM orders WHERE id = '{id}'"""
-    ).fetchone()[0]
-    return Status
-
-
-async def WriteOffTheReferral(referral_id, sum_referral):
-    cursor = connection.cursor()
-    cursor.execute(
-        f"""UPDATE Referral SET
-        referral_money = referral_money - '{sum_referral}'
-        WHERE user_id = '{referral_id}'"""
-    )
     connection.commit()
 
 
@@ -704,9 +490,6 @@ async def Get_History(user_id):
         f"""SELECT * FROM history WHERE user_id = '{user_id}'"""
     ).fetchall()
     return res
-
-
-# --- --- --- --- --- --- --- --- ---
 
 
 def get_personal_checks_count(user_id: int) -> int:
@@ -865,6 +648,29 @@ def get_bot_data_by_token(token: str) -> Dict[str, Any] | None:
     return result.fetchone()
 
 
+def get_bot_data_by_id(bot_id: int) -> Dict[str, Any] | None:
+    cursor = connection.cursor()
+    cursor.row_factory = dict_factory
+
+    result = cursor.execute(f"SELECT * FROM Bots WHERE id = '{bot_id}'")
+
+    return result.fetchone()
+
+
+def update_bot_username(
+    bot_id: int,
+    username: str,
+):
+    cursor = connection.cursor()
+
+    cursor.execute(
+        f"""UPDATE Bots SET bot_username = '{username}'
+        WHERE id = '{bot_id}'""",
+    )
+
+    connection.commit()
+
+
 def add_paylink(
     user_id: int,
     order_id: str,
@@ -905,11 +711,12 @@ def update_paylink_order_id(
     connection.commit()
 
 
-def set_paylink_paid(paylink_id: int):
+def set_paylink_paid(paylink_id: int, amount: float):
     cursor = connection.cursor()
 
     cursor.execute(
-        f"UPDATE Paylink SET status = 'paid' WHERE id = '{paylink_id}'",
+        f"""UPDATE Paylink SET status = 'paid', amount = '{amount}'
+          WHERE id = '{paylink_id}'""",
     )
 
     connection.commit()
@@ -977,7 +784,7 @@ def get_total_bonus_amount(
     return cursor.fetchone()[0] or 0
 
 
-def get_categories_for_pagination(
+def get_active_categories(
     limit: int,
     page: int,
     services: List[str],
@@ -985,18 +792,24 @@ def get_categories_for_pagination(
     cursor = connection.cursor()
     cursor.row_factory = dict_factory
 
-    query = f"""SELECT * FROM category WHERE parent_id = ?
-            AND service IN ({','.join(['?'] * len(services))})
+    query = f"""SELECT DISTINCT category.* FROM category
+            LEFT JOIN category as subcategory
+                ON subcategory.parent_id = category.id
+            LEFT JOIN product
+                ON category.id = product.category_id
+                OR subcategory.id = product.category_id
+            WHERE category.parent_id = 'None' AND product.is_active = 1
+            AND product.service_provider IN ({",".join(["?"] * len(services))})
             LIMIT ? OFFSET ?"""
 
-    params = ["None", *services, limit + 1, (page - 1) * limit]
+    params = [*services, limit + 1, (page - 1) * limit]
 
     result = cursor.execute(query, params)
 
     return result.fetchall()
 
 
-def get_subcategories_for_pagination(
+def get_active_subcategories(
     limit: int,
     page: int,
     services: List[str],
@@ -1005,9 +818,11 @@ def get_subcategories_for_pagination(
     cursor = connection.cursor()
     cursor.row_factory = dict_factory
 
-    query = f"""SELECT * FROM category WHERE parent_id = ?
-            AND service IN ({','.join(['?'] * len(services))})
-            LIMIT ? OFFSET ?"""
+    query = f"""SELECT DISTINCT category.* FROM category
+        INNER JOIN product ON category.id = product.category_id
+        WHERE category.parent_id = ? AND product.is_active = 1
+        AND product.service_provider IN ({",".join(["?"] * len(services))})
+        LIMIT ? OFFSET ?"""
 
     params = [parent_id, *services, limit + 1, (page - 1) * limit]
 
@@ -1016,19 +831,23 @@ def get_subcategories_for_pagination(
     return result.fetchall()
 
 
-def get_products_for_pagination(
+def get_active_products(
     limit: int,
     page: int,
     category_id: int,
+    services: List[str],
 ) -> List[Dict[str, Any]]:
     cursor = connection.cursor()
     cursor.row_factory = dict_factory
 
-    query = "SELECT * FROM product WHERE category_id = ? LIMIT ? OFFSET ?"
+    query = f"""SELECT * FROM product
+        WHERE category_id = ? AND is_active = 1
+        AND service_provider IN ({",".join(["?"] * len(services))})
+        LIMIT ? OFFSET ?"""
 
-    result = cursor.execute(
-        query, (category_id, limit + 1, (page - 1) * limit)
-    )
+    params = [category_id, *services, limit + 1, (page - 1) * limit]
+
+    result = cursor.execute(query, params)
 
     return result.fetchall()
 
@@ -1077,9 +896,8 @@ def get_order_by_id(order_id: int) -> Dict[str, Any]:
     cursor.row_factory = dict_factory
 
     result = cursor.execute(
-        f"""SELECT orders.*, product.name, category.service FROM orders
+        f"""SELECT orders.*, product.name, product.service_provider FROM orders
         LEFT JOIN product ON orders.product_id = product.id
-        LEFT JOIN category ON product.category_id = category.id
         WHERE orders.id = '{order_id}'"""
     )
 
@@ -1087,18 +905,53 @@ def get_order_by_id(order_id: int) -> Dict[str, Any]:
 
 
 def get_orders_for_pagination(
-    user_id: int,
-    limit: int,
-    page: int,
+    user_id: int | None = None,
+    order_id_like: int | None = None,
+    statuses: List[OrderStatus] | None = None,
+    limit: int | None = None,
+    page: int | None = None,
+    user_id_like: str | None = None,
+    link_like: str | None = None,
 ) -> List[Dict[str, Any]]:
     cursor = connection.cursor()
     cursor.row_factory = dict_factory
 
     query = """SELECT orders.*, product.name FROM orders
-            LEFT JOIN product ON orders.product_id = product.id
-            WHERE user_id = ? LIMIT ? OFFSET ?"""
+            LEFT JOIN product ON orders.product_id = product.id"""
 
-    result = cursor.execute(query, (user_id, limit + 1, (page - 1) * limit))
+    if any((user_id, statuses, user_id_like, link_like)):
+        query += " WHERE"
+
+        conditions = []
+
+        if user_id:
+            conditions.append(f"user_id = '{user_id}'")
+
+        if user_id_like:
+            conditions.append(f"user_id LIKE '%{str(user_id_like)}%'")
+
+        if statuses:
+            statuses_string = ",".join(
+                [f"'{status.value}'" for status in statuses]
+            )
+            conditions.append(f"status IN ({statuses_string})")
+
+        if link_like:
+            conditions.append(f"url LIKE '%{link_like}%'")
+
+        if order_id_like:
+            conditions.append(
+                f"order_id LIKE '%{str(order_id_like)}%' OR orders.id = '{str(order_id_like)}'"  # noqa
+            )
+
+        query += " " + " AND ".join(conditions)
+
+    if limit:
+        query += f" LIMIT {limit + 1}"
+    if page:
+        query += f" OFFSET {(page - 1) * limit}"
+
+    result = cursor.execute(query)
 
     return result.fetchall()
 
@@ -1139,8 +992,7 @@ def get_orders_ids_for_check(service: str) -> List[int]:
     cursor.execute(
         f"""SELECT orders.id, orders.order_id FROM orders
         LEFT JOIN product ON orders.product_id = product.id
-        LEFT JOIN category ON product.category_id = category.id
-        WHERE service = '{service}'
+        WHERE service_provider = '{service}'
         AND status in ('{OrderStatus.STARTING.value}',
         '{OrderStatus.IN_PROGRESS.value}')"""
     )
@@ -1174,15 +1026,6 @@ def get_category_and_subcategory_names(
     )
 
     return cursor.fetchone()
-
-
-def get_active_services() -> List[str]:
-    cursor = connection.cursor()
-    cursor.row_factory = dict_factory
-
-    result = cursor.execute("""SELECT name FROM service WHERE is_active = 1""")
-
-    return result.fetchall()
 
 
 def get_services() -> List[Dict[str, Any]]:
@@ -1242,6 +1085,15 @@ def get_bots_for_user(user_id: int) -> List[Dict[str, Any]]:
     return result.fetchall()
 
 
+def get_bots() -> List[Dict[str, Any]]:
+    cursor = connection.cursor()
+    cursor.row_factory = dict_factory
+
+    result = cursor.execute("""SELECT * FROM Bots""")
+
+    return result.fetchall()
+
+
 def get_paid_orders(service: str) -> List[Dict[str, Any]]:
     cursor = connection.cursor()
     cursor.row_factory = dict_factory
@@ -1249,9 +1101,46 @@ def get_paid_orders(service: str) -> List[Dict[str, Any]]:
     result = cursor.execute(
         f"""SELECT orders.* FROM orders
         LEFT JOIN product ON orders.product_id = product.id
-        LEFT JOIN category ON product.category_id = category.id
-        WHERE category.service = '{service}'
+        WHERE service_provider = '{service}'
         AND status = '{OrderStatus.NEW.value}'"""
     )
 
     return result.fetchall()
+
+
+def update_bot(
+    bot_id: int,
+    token: str,
+):
+    cursor = connection.cursor()
+
+    cursor.execute(
+        f"""UPDATE Bots SET api_key = '{token}' WHERE id = '{bot_id}'"""
+    )
+
+    connection.commit()
+
+
+def update_user_bot(
+    user_id: int,
+    bot_id: int,
+):
+    cursor = connection.cursor()
+
+    cursor.execute(
+        f"""UPDATE user SET bot_id = '{bot_id}' WHERE user_id = '{user_id}'"""
+    )
+
+    connection.commit()
+
+
+def get_users_tg_ids_by_bot_id(bot_id: int) -> List[int]:
+    cursor = connection.cursor()
+
+    result = cursor.execute(
+        f"""SELECT user_id FROM user WHERE bot_id = '{bot_id}'"""
+    )
+
+    ids = [user_id[0] for user_id in result.fetchall()]
+
+    return ids

@@ -1,10 +1,16 @@
 from typing import Any, Dict, List
+
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from core.callback_factories.my_bots import MyBotAction, MyBotCallbackData
+from core.text_manager import text_manager as tm
 
-from .main_menu import to_main_menu_button
+from .utils import (
+    create_to_main_menu_button,
+    create_to_my_bots_button,
+    create_to_referrals_button,
+)
 
 
 def create_manage_bots_keyboard(
@@ -13,8 +19,12 @@ def create_manage_bots_keyboard(
     builder = InlineKeyboardBuilder()
 
     for bot_data in bots_data:
-        text = f"@{bot_data['username']}"
-        if bot_data["current"]:
+        text = tm.button.bot_in_list().format(
+            bot_username=bot_data["bot_username"]
+        )
+        if "unauthorized" in bot_data:
+            text = f"{text} [Не авторизован]"
+        if "current" in bot_data:
             text = f"{text} [Текущий]"
         builder.row(
             InlineKeyboardButton(
@@ -28,7 +38,7 @@ def create_manage_bots_keyboard(
 
     builder.row(
         InlineKeyboardButton(
-            text="Создать",
+            text=tm.button.bot_create(),
             callback_data=MyBotCallbackData(
                 action=MyBotAction.create_bot,
             ).pack(),
@@ -36,11 +46,8 @@ def create_manage_bots_keyboard(
     )
 
     builder.row(
-        InlineKeyboardButton(
-            text="💰 Рефералы",
-            callback_data="earn",
-        ),
-        to_main_menu_button,
+        create_to_referrals_button(),
+        create_to_main_menu_button(),
     )
 
     return builder.as_markup()
@@ -53,7 +60,7 @@ def create_manage_bot_keyboard(
 
     builder.row(
         InlineKeyboardButton(
-            text="Удалить",
+            text=tm.button.remove(),
             callback_data=MyBotCallbackData(
                 action=MyBotAction.delete_bot,
                 bot_id=data.bot_id,
@@ -62,12 +69,7 @@ def create_manage_bot_keyboard(
     )
 
     builder.row(
-        InlineKeyboardButton(
-            text="К ботам",
-            callback_data=MyBotCallbackData(
-                action=MyBotAction.view_bots,
-            ).pack(),
-        )
+        create_to_my_bots_button(),
     ),
 
     return builder.as_markup()
@@ -80,14 +82,14 @@ def create_delete_confirm_keyboard(
 
     builder.row(
         InlineKeyboardButton(
-            text="✅ Да",
+            text=tm.button.yes(),
             callback_data=MyBotCallbackData(
                 action=MyBotAction.delete_confirmed,
                 bot_id=data.bot_id,
             ).pack(),
         ),
         InlineKeyboardButton(
-            text="❌ Нет",
+            text=tm.button.no(),
             callback_data=MyBotCallbackData(
                 action=MyBotAction.view_bot,
                 bot_id=data.bot_id,
