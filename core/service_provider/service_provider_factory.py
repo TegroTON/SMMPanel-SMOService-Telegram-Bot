@@ -11,7 +11,8 @@ class ServiceProviderFactory:
 
     @staticmethod
     def get_provider(provider_name: str) -> ServiceProvider:
-        return ServiceProviderFactory._providers[provider_name]
+        provider = ServiceProviderFactory._providers[provider_name]
+        return provider
 
 
 service_provider_factory = ServiceProviderFactory()

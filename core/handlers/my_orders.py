@@ -1,4 +1,5 @@
 from aiogram import F, Router
+from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
 import database as db
@@ -14,6 +15,7 @@ from core.keyboards.my_orders import (
 )
 from core.service_provider.manager import provider_manager
 from core.service_provider.order_status import OrderStatus
+from core.text_manager import text_manager as tm
 
 my_orders_router = Router(name="my_orders_router")
 
@@ -24,23 +26,51 @@ my_orders_router = Router(name="my_orders_router")
 async def my_orders_callback_handler(
     callback: CallbackQuery,
     callback_data: MyOrdersCallbackData,
+    state: FSMContext,
 ):
+    await state.set_state(None)
+
+    filtered_statuses = [
+        *(
+            [
+                OrderStatus.NEW,
+                OrderStatus.PENDING_PAYMENT,
+                OrderStatus.STARTING,
+                OrderStatus.IN_PROGRESS,
+            ]
+            if callback_data.filter_active
+            else []
+        ),
+        *(
+            [
+                OrderStatus.COMPLETED,
+                OrderStatus.PARTIAL,
+            ]
+            if callback_data.filter_completed
+            else []
+        ),
+        *(
+            [
+                OrderStatus.CANCELED,
+            ]
+            if callback_data.filter_canceled
+            else []
+        ),
+    ]
+
     orders = db.get_orders_for_pagination(
         user_id=callback.from_user.id,
         limit=config.PAGINATION_CATEGORIES_PER_PAGE,
         page=callback_data.page,
+        statuses=filtered_statuses,
     )
 
     await callback.message.edit_text(
-        text=(
-            "<b>📋 Мои заказы</b>\n"
-            "Здесь собраны все заказы. У заказов всего 5 статусов:\n"
-            "   {pending}\n   {new}\n   {in_progress}\n"
-            "   {completed}\n   {canceled}.\n"
-        ).format(
+        text=tm.message.my_orders().format(
             pending=OrderStatus.PENDING_PAYMENT.name_with_icon_ru,
             new=OrderStatus.NEW.name_with_icon_ru,
             in_progress=OrderStatus.IN_PROGRESS.name_with_icon_ru,
+            partial=OrderStatus.PARTIAL.name_with_icon_ru,
             completed=OrderStatus.COMPLETED.name_with_icon_ru,
             canceled=OrderStatus.CANCELED.name_with_icon_ru,
         ),
@@ -62,13 +92,13 @@ async def try_pay_for_order_callback_handler(
 
     if not order:
         await callback.message.answer(
-            "Что-то пошло не так!" "Заказ не найден!",
+            text=tm.message.my_orders_not_found(),
         )
         return
 
     if order["status"] != OrderStatus.PENDING_PAYMENT:
         await callback.message.answer(
-            "Заказ уже оплачен!",
+            text=tm.message.my_orders_already_paid(),
         )
         return
 
@@ -89,11 +119,11 @@ async def try_pay_for_order_callback_handler(
 
         await provider_manager.activate_order(
             order["id"],
-            order["service"],
+            order["service_provider"],
         )
 
         await callback.answer(
-            "Заказ успешно оплачен!",
+            text=tm.message.my_orders_successfully_paid(),
             cache_time=10,
         )
 
@@ -109,9 +139,8 @@ async def try_pay_for_order_callback_handler(
     replenish_amount = order["sum"] - balance
 
     await callback.message.edit_text(
-        text=(
-            "Недостаточно средств на балансе!\n"
-            f"Не хватает: {replenish_amount} руб."
+        text=tm.message.my_orders_insufficient_funds().format(
+            replenish_amount=replenish_amount
         ),
         reply_markup=create_replenish_for_order_keyboard(
             data=callback_data,

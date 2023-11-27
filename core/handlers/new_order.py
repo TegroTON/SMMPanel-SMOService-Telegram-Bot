@@ -1,5 +1,5 @@
 import validators
-from aiogram import F, Router
+from aiogram import Bot, F, Router
 from aiogram.filters import StateFilter, or_f
 from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
@@ -23,6 +23,8 @@ from core.keyboards.new_order import (
 )
 from core.keyboards.utils import create_back_keyboard
 from core.service_provider.manager import provider_manager
+from core.text_manager import text_manager as tm
+from core.utils.bot import get_bot_id_by_token
 
 order_router = Router(name="order_router")
 
@@ -50,7 +52,7 @@ async def choose_category_callback_handler(
     if not callback_data:
         callback_data = NewOrderCallbackData()
 
-    categories = db.get_categories_for_pagination(
+    categories = db.get_active_categories(
         limit=config.PAGINATION_CATEGORIES_PER_PAGE,
         page=callback_data.page,
         services=provider_manager.get_active_services_names(),
@@ -62,7 +64,7 @@ async def choose_category_callback_handler(
     )
 
     await callback.message.edit_text(
-        text=("🔥 <b>Создание нового заказа!</b>\n    Выберите категорию:"),
+        text=tm.message.new_order_choose_category(),
         reply_markup=reply_markup,
     )
 
@@ -76,7 +78,7 @@ async def choose_subcategory_callback_handler(
 ):
     parent_id = callback_data.category_id
 
-    subcategories = db.get_subcategories_for_pagination(
+    subcategories = db.get_active_subcategories(
         limit=config.PAGINATION_CATEGORIES_PER_PAGE,
         page=callback_data.page,
         parent_id=parent_id,
@@ -97,10 +99,8 @@ async def choose_subcategory_callback_handler(
     category_name = db.get_category_name(callback_data.category_id)
 
     await callback.message.edit_text(
-        text=(
-            "🔥 <b>Создание нового заказа!</b>\n"
-            f"    Категория: {category_name}\n"
-            "    Выберите подкатегорию:"
+        text=tm.message.new_order_choose_subcategory().format(
+            category_name=category_name,
         ),
         reply_markup=create_choose_subcategory_keyboard(
             subcategories=subcategories,
@@ -116,19 +116,8 @@ async def choose_product_callback_handler(
     callback: CallbackQuery,
     callback_data: NewOrderCallbackData,
 ):
-    category_id = (
-        callback_data.subcategory_id
-        if callback_data.subcategory_id
-        else callback_data.category_id
-    )
-
-    products = db.get_products_for_pagination(
-        limit=config.PAGINATION_CATEGORIES_PER_PAGE,
-        page=callback_data.page,
-        category_id=category_id,
-    )
-
     if callback_data.subcategory_id:
+        category_id = callback_data.subcategory_id
         (
             category_name,
             subcategory_name,
@@ -136,15 +125,21 @@ async def choose_product_callback_handler(
             subcategory_id=category_id,
         )
     else:
+        category_id = callback_data.category_id
         category_name = db.get_category_name(category_id)
         subcategory_name = "- - - - - -"
 
+    products = db.get_active_products(
+        limit=config.PAGINATION_CATEGORIES_PER_PAGE,
+        page=callback_data.page,
+        category_id=category_id,
+        services=provider_manager.get_active_services_names(),
+    )
+
     await callback.message.edit_text(
-        text=(
-            "🔥 <b>Создание нового заказа!</b>\n"
-            f"    Категория: {category_name}\n"
-            f"    Подкатегория: {subcategory_name}\n"
-            "    Выберите услугу:"
+        text=tm.message.new_order_choose_product().format(
+            category_name=category_name,
+            subcategory_name=subcategory_name,
         ),
         reply_markup=create_choose_product_keyboard(
             products=products,
@@ -163,16 +158,30 @@ async def get_quantity_callback_handler(
 ):
     product = db.get_product_by_id(callback_data.product_id)
 
+    if callback_data.subcategory_id:
+        category_id = callback_data.subcategory_id
+        (
+            category_name,
+            subcategory_name,
+        ) = db.get_category_and_subcategory_names(
+            subcategory_id=category_id,
+        )
+    else:
+        category_id = callback_data.category_id
+        category_name = db.get_category_name(category_id)
+        subcategory_name = "- - - - - -"
+
     await state.set_data(callback_data.model_dump())
     await state.set_state(NewOrderState.enter_quantity)
 
     await callback.message.edit_text(
-        text=(
-            f"""👴Заказ услуги '{product["name"]}'\n"""
-            f"💳 Цена - {product['price']} руб."
-            " за одну единицу (Подписчик, лайк, репост)\n"
-            "👇 Введите количество для заказа"
-            f" от {product['minorder']} до {product['maxorder']}:"
+        text=tm.message.new_order_enter_amount().format(
+            category_name=category_name,
+            subcategory_name=subcategory_name,
+            title=product["name"],
+            price=product["price"],
+            min_quantity=product["minorder"],
+            max_quantity=product["maxorder"],
         ),
         reply_markup=create_back_keyboard(
             data=callback_data.model_copy(
@@ -190,9 +199,29 @@ async def get_quantity_callback_handler(
 async def enter_quantity_handler(
     message: Message,
     state: FSMContext,
+    bot: Bot,
 ):
     data = await state.get_data()
     product = db.get_product_by_id(data["product_id"])
+
+    if "mistake_message_id" in data and data["mistake_message_id"]:
+        await bot.delete_message(
+            chat_id=message.chat.id,
+            message_id=data.pop("mistake_message_id"),
+        )
+
+    if data["subcategory_id"]:
+        category_id = data["subcategory_id"]
+        (
+            category_name,
+            subcategory_name,
+        ) = db.get_category_and_subcategory_names(
+            subcategory_id=category_id,
+        )
+    else:
+        category_id = data["category_id"]
+        category_name = db.get_category_name(category_id)
+        subcategory_name = "- - - - - -"
 
     try:
         quantity = int(message.text)
@@ -203,23 +232,32 @@ async def enter_quantity_handler(
         ):
             raise ValueError
     except ValueError:
-        await message.answer(
-            text=(
-                "Введите целое число в диапазоне "
-                f"от {product['minorder']} до {product['maxorder']}"
+        mistake_message = await message.answer(
+            text=tm.message.new_order_wrong_quantity().format(
+                min_quantity=product["minorder"],
+                max_quantity=product["maxorder"],
             ),
         )
+        await state.update_data(
+            {
+                "mistake_message_id": mistake_message.message_id,
+            }
+        )
+        await message.delete()
         return
 
     data["quantity"] = quantity
 
-    await state.update_data(data)
+    await state.set_data(data)
     await state.set_state(NewOrderState.enter_url)
 
     await message.answer(
-        text=(
-            " 👇 Введите адрес целевой страницы"
-            " (ссылка на фото, профиль, видео):"
+        text=tm.message.new_order_enter_url().format(
+            category_name=category_name,
+            subcategory_name=subcategory_name,
+            title=product["name"],
+            price=product["price"],
+            quantity=quantity,
         ),
         reply_markup=create_back_keyboard(
             data=NewOrderCallbackData(
@@ -238,17 +276,28 @@ async def enter_quantity_handler(
 async def enter_link_handler(
     message: Message,
     state: FSMContext,
+    bot: Bot,
 ):
-    if not validators.url(message.text):
-        await message.answer(
-            text=(
-                "Это не ссылка!"
-                " Введите ссылку в формате: https://example.com"
-            )
+    data = await state.get_data()
+
+    if "mistake_message_id" in data and data["mistake_message_id"]:
+        await bot.delete_message(
+            chat_id=message.chat.id,
+            message_id=data.pop("mistake_message_id"),
         )
+
+    if not validators.url(message.text):
+        mistake_message = await message.answer(
+            text=tm.message.new_order_wrong_link(),
+        )
+        await state.update_data(
+            {
+                "mistake_message_id": mistake_message.message_id,
+            }
+        )
+        await message.delete()
         return
 
-    data = await state.get_data()
     await state.clear()
 
     user_id = message.from_user.id
@@ -257,10 +306,10 @@ async def enter_link_handler(
 
     product = db.get_product_by_id(data["product_id"])
     total_amount = round(
-        data["quantity"] * product["price"], config.BALANCE_PRECISION
+        data["quantity"] * product["price"], config.PRODUCT_PRICE_PRECISION
     )
 
-    bot_id = db.get_bot_id_by_token(message.bot.token)
+    bot_id = get_bot_id_by_token(message.bot.token)
 
     internal_order_id = db.add_order(
         user_id=user_id,

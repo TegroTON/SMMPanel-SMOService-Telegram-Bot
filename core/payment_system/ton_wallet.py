@@ -1,8 +1,7 @@
 import uuid
 
-import requests
-
 from core.config import config
+from core.utils.http import http_request
 
 
 async def ton_wallet_success(request):
@@ -52,13 +51,20 @@ async def register_ton_wallet_paylink(
         "failReturnUrl": "https://t.me/wallet",
     }
 
-    response = requests.post(
-        "https://pay.wallet.tg/wpay/store-api/v1/order",
-        json=payload,
+    response = await http_request(
+        url="https://pay.wallet.tg/wpay/store-api/v1/order",
+        json_data=payload,
         headers=headers,
-        timeout=10,
     )
 
-    data = response.json()
+    if not response:
+        return ""
 
-    return data
+    response_data = response.json()
+
+    if not response_data or not response_data.get("data"):
+        return ""
+
+    direct_paylink = response_data["data"]["payLink"]
+
+    return direct_paylink

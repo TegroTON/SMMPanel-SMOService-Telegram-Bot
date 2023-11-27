@@ -2,6 +2,9 @@ from aiogram import Bot
 
 import database as db
 from core.config import config
+from core.keyboards.utils import create_to_wallet_keyboard
+from core.text_manager import text_manager as tm
+from core.utils.bot import get_bot_id_by_token
 
 
 def save_paylink(
@@ -11,9 +14,7 @@ def save_paylink(
     bot_token: str,
     amount: float,
 ) -> int:
-    bot_id = db.get_bot_id_by_token(bot_token)
-    if not bot_id:
-        bot_id = -1
+    bot_id = get_bot_id_by_token(bot_token)
 
     paylink_id = db.add_paylink(
         user_id=user_id,
@@ -48,10 +49,10 @@ async def replenish_affiliate_balance(
         )
         await bot.send_message(
             chat_id=affiliate_id,
-            text=(
-                f"Ваш реферал {referral_level} заказал услугу.\n"
-                f"Ваш бонус: {affiliate_bonus} руб."
+            text=tm.message.referral_payment().format(
+                affiliate_bonus=affiliate_bonus
             ),
+            reply_markup=create_to_wallet_keyboard,
         )
         referral_level += 1
         affiliate_id = db.get_affiliate_id(affiliate_id)

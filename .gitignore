@@ -12,3 +12,7 @@ dev
 database.db
 
 logs/*
+
+locales/*
+
+отчет_*.txt

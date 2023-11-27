@@ -6,7 +6,7 @@ class OrderStatus(Enum):
         "pending_payment",
         "Pending payment",
         "💰",
-        "Ожидает оплаты",
+        "Без оплаты",
     )
     NEW = "new", "New", "🆕", "Новый"
     STARTING = "starting", "New", "🆕", "Запускается"

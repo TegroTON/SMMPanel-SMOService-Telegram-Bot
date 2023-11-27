@@ -1,45 +1,63 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from core.text_manager import text_manager as tm
+
+from .utils import (
+    create_to_admin_panel_button,
+    create_to_cheques_button,
+    create_to_faq_button,
+    create_to_help_button,
+    create_to_main_menu_button,
+    create_to_my_bots_button,
+    create_to_new_order_button,
+    create_to_referrals_button,
+    create_to_wallet_button,
+)
 
 
 def get_main_menu_keyboard(is_admin: bool = False) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
-    buttons = [
-        ("🔥 Новый заказ", "new_order"),
-        ("👛 Кошелёк", "wallet"),
-        ("💰 Рефералы", "earn"),
-        ("🦋 Чеки", "check"),
-        ("🤖 Мои Боты", "my_bots"),
-    ]
+    builder.row(
+        create_to_new_order_button(),
+    )
+
+    builder.row(
+        create_to_wallet_button(),
+        create_to_referrals_button(),
+        create_to_help_button(),
+        create_to_faq_button(),
+        create_to_cheques_button(),
+        create_to_my_bots_button(),
+        width=2,
+    )
 
     if is_admin:
-        buttons.append(("Админ-панель", "admin"))
+        builder.row(create_to_admin_panel_button())
 
-    for button in buttons:
-        builder.button(
-            text=button[0],
-            callback_data=button[1],
-        )
-
-    builder.adjust(1, 2)
-
-    return builder.as_markup(resize_keyboard=True)
+    return builder.as_markup()
 
 
 def create_back_to_main_menu_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
     builder.row(
-        to_main_menu_button,
+        create_to_main_menu_button(),
     )
 
     return builder.as_markup()
 
 
-to_main_menu_button = InlineKeyboardButton(
-    text="📖 Главное меню",
-    callback_data="main_menu",
-)
-
-back_to_main_menu_keyboard = create_back_to_main_menu_keyboard()
+def create_main_menu_button_reply_keyboard() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text=tm.button.main_menu()),
+            ]
+        ],
+        resize_keyboard=True,
+    )

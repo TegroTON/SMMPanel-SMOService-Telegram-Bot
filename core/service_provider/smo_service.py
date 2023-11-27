@@ -1,14 +1,10 @@
-import logging
+import asyncio
 from typing import Any, Dict, List
-
-from validators import ValidationError
 
 import database as db
 from core.config import config
 
-from .provider import ServiceParseError, ServiceProvider
-
-logger = logging.getLogger(__name__)
+from .provider import ServiceParseError, ServiceProvider, logger
 
 
 class SmoServiceProvider(ServiceProvider):
@@ -38,7 +34,7 @@ class SmoServiceProvider(ServiceProvider):
             "data" not in response_data
             or "order_id" not in response_data["data"]
         ):
-            raise ValidationError("Response not contains 'order'")
+            raise ValueError("Response not contains 'order'")
 
         return response_data["data"]["order_id"]
 
@@ -47,10 +43,12 @@ class SmoServiceProvider(ServiceProvider):
         orders_ids: List[int],
     ):
         for internal_id, external_id in orders_ids:
-            await self.try_check_order_status(
+            await self.check_order_status(
                 internal_id=internal_id,
                 external_id=external_id,
             )
+
+            await asyncio.sleep(0.1)
 
     def prepare_data_for_check(
         self,
@@ -72,7 +70,7 @@ class SmoServiceProvider(ServiceProvider):
             or "order_id" not in response_data["data"]
             or "status" not in response_data["data"]
         ):
-            raise ValidationError(
+            raise ValueError(
                 "Response not contains 'order' or 'status':\n"
                 f"{response_data}"
             )
@@ -81,8 +79,8 @@ class SmoServiceProvider(ServiceProvider):
 
     def calculate_refund_amount(
         self,
-        user_id: int,
         total_amount: float,
+        quantity: int,
         data: Dict[str, Any],
     ) -> float:
         return total_amount
@@ -97,7 +95,7 @@ class SmoServiceProvider(ServiceProvider):
     def get_data_for_parse(
         self,
         response_data: Dict[str, Any],
-    ) -> Dict[str, Any]:
+    ) -> Dict[int, Dict[str, Any]]:
         if response_data["type"] == "error":
             raise ServiceParseError(
                 (
@@ -108,39 +106,66 @@ class SmoServiceProvider(ServiceProvider):
                 cause=response_data["desc"],
             )
 
-        return response_data["data"]
+        return {
+            int(product_data["id"]): product_data
+            for product_data in response_data["data"]
+        }
+
+    async def update_product(
+        self,
+        existing_product: Dict[str, Any],
+        product: Dict[str, Any],
+    ):
+        if {
+            existing_product["name"],
+            existing_product["price"],
+            existing_product["minorder"],
+            existing_product["maxorder"],
+        } == {
+            product["name"],
+            round(
+                float(product["price"]),
+                config.PRODUCT_PRICE_PRECISION,
+            ),
+            int(product["min"]),
+            int(product["max"]),
+        }:
+            return
+
+        db.update_product(
+            service_id=product["id"],
+            min_quantity=product["min"],
+            max_quantity=product["max"],
+            price=round(
+                float(product["price"]),
+                config.PRODUCT_PRICE_PRECISION,
+            ),
+        )
+        logger.info("Product %s updated.", product["id"])
 
     async def parse_product_data(
         self,
         product_data: Dict[str, Any],
     ):
-        product_name = product_data["name"]
-        min_quantity = product_data["min"]
-        max_quantity = product_data["max"]
-        category = product_data["root_category_name"]
-        sub_category = product_data["category_name"]
-        cost = product_data["price"]
-        service_id = product_data["id"]
+        category_name = product_data["root_category_name"]
+        subcategory_name = product_data["category_name"]
 
-        if "telegram" in category or "телеграм" in category.lower():
-            return
+        category_id = db.add_category(name=category_name)
+        if subcategory_name:
+            subcategory_id = db.add_category(
+                name=subcategory_name,
+                parent_id=category_id,
+            )
 
-        await db.AddCategory(category, self.name)
-        if sub_category != "":
-            category_id = await db.GetIdParentCategory(
-                category, self.name, None
-            )
-            await db.AddCategory(sub_category, self.name, category_id)
-            parent_id = await db.GetIdParentCategory(
-                sub_category, self.name, category_id
-            )
-        else:
-            parent_id = await db.GetIdParentCategory(category, self.name, None)
-        await db.AddProduct(
-            parent_id,
-            product_name,
-            min_quantity,
-            max_quantity,
-            cost,
-            service_id,
+        db.add_product(
+            category_id=subcategory_id or category_id,
+            name=product_data["name"],
+            min_quantity=product_data["min"],
+            max_quantity=product_data["max"],
+            price=round(
+                float(product_data["price"]),
+                config.PRODUCT_PRICE_PRECISION,
+            ),
+            service_id=product_data["id"],
+            service_provider=self.name,
         )

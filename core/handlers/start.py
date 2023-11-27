@@ -5,19 +5,26 @@ from aiogram import Bot, F, Router
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.exceptions import (
     TelegramAPIError,
+    TelegramBadRequest,
     TelegramForbiddenError,
     TelegramNotFound,
 )
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from core.callback_factories.cheques import CheckSubscribesCallbackData
+from core.keyboards.cheques import create_check_subscribes_keyboard
+from core.utils.bot import get_bot_id_by_token
 
 import database as db
 from core.config import config
-from core.keyboards import Button
-from core.keyboards.main_menu import get_main_menu_keyboard
+from core.keyboards.main_menu import (
+    create_main_menu_button_reply_keyboard,
+    get_main_menu_keyboard,
+)
+from core.text_manager import text_manager as tm
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 start_router = Router()
 
@@ -37,19 +44,17 @@ async def main_menu_callback_handler(
     )
 
 
-@start_router.message(F.text == "📖 Главное меню")
+@start_router.message(F.text == tm.button.main_menu())
 async def main_menu_handler(
     message: Message,
     state: FSMContext,
     is_callback: bool = False,
     user_id: int | None = None,
 ):
-    await state.clear()
+    await state.set_state(None)
 
     if user_id is None:
         user_id = message.from_user.id
-
-    text = "Выберите в меню ниже интересующий Ваc раздел:"
 
     if is_callback:
         reply_function = message.edit_text
@@ -59,7 +64,7 @@ async def main_menu_handler(
     is_admin = user_id == config.ADMIN_ID
 
     await reply_function(
-        text=text,
+        text=tm.message.main_menu(),
         reply_markup=get_main_menu_keyboard(is_admin),
     )
 
@@ -72,12 +77,10 @@ async def start_command_handler(
     state: FSMContext,
     bot: Bot,
 ):
-    # TODO: Check best way to set button. This is temporary solution
     await message.answer(
-        text="Устанавливаю кнопку главного меню.",
-        reply_markup=Button.ReplyStartKeyboard,
+        text=tm.message.init(),
+        reply_markup=create_main_menu_button_reply_keyboard(),
     )
-    # ---
 
     user_id = message.from_user.id
 
@@ -88,32 +91,46 @@ async def start_command_handler(
     )
 
     start_command = message.text
-    command = start_command[6:]
+    command = start_command[7:]
+    cheque_number = None
+
+    if "check" in command:
+        try:
+            cheque_number = command[6:]
+        except ValueError:
+            await message.answer(
+                text=tm.message.cheque_activate_wrong_number().format(
+                    cheque_number=cheque_number
+                ),
+            )
+
+    bot_id = get_bot_id_by_token(token=message.bot.token)
 
     # If user exists, activate check if command is check.
     if await db.is_user_exists(user_id):
-        if "check" in command:
+        db.update_user_bot(user_id, bot_id)
+        if cheque_number:
             await try_activate_check(
                 message=message,
                 bot=bot,
-                start_command=start_command,
+                cheque_number=cheque_number,
                 user_id=user_id,
             )
         return
     # ---
 
-    await db.add_user(user_id)
+    await db.add_user(user_id, bot_id)
 
-    if "check" in command:
-        await try_activate_check(
-            message=message,
-            bot=bot,
-            start_command=start_command,
-            user_id=user_id,
-            is_new_user=True,
-        )
+    if cheque_number and await try_activate_check(
+        message=message,
+        bot=bot,
+        cheque_number=cheque_number,
+        user_id=user_id,
+        is_new_user=True,
+    ):
+        return
 
-    if "ref" in command:
+    elif "ref" in command:
         try:
             affiliate_id = int(start_command[11:])
         except ValueError:
@@ -121,21 +138,13 @@ async def start_command_handler(
 
         if affiliate_id == user_id:
             await message.answer(
-                text=(
-                    "Вы не можете регистрироваться по собственной"
-                    " реферальной ссылке!"
-                ),
+                text=tm.message.referrals_try_own_link(),
             )
             return
 
         if not await db.is_user_exists(affiliate_id):
             await message.answer(
-                text=(
-                    "Вы попытались зарегистрироваться по некорректной"
-                    " реферальной ссылке."
-                    "\n"
-                    "Пользователя с таким идентификатором не существует."
-                ),
+                text=tm.message.referrals_incorrect_link(),
             )
             return
 
@@ -143,10 +152,7 @@ async def start_command_handler(
             bot=bot,
             user_id=user_id,
             affiliate_id=affiliate_id,
-            notify_text=(
-                "По вашей реферальной ссылке зарегистрировался новый"
-                " пользователь."
-            ),
+            notify_text=tm.message.referrals_bind_link(),
         )
 
         return
@@ -157,79 +163,77 @@ async def start_command_handler(
             bot=bot,
             user_id=user_id,
             affiliate_id=affiliate_bot_data["id_user"],
-            notify_text="В вашем боте зарегистрировался новый пользователь.",
+            notify_text=tm.message.referrals_bind_bot(),
         )
 
 
 async def try_activate_check(
     message: Message,
     bot: Bot,
-    start_command: str,
+    cheque_number: int,
     user_id: int,
     is_new_user: bool = False,
-):
-    try:
-        check_number = int(start_command[13:])
-    except ValueError:
-        return
-
-    check_data = db.get_check_by_check_number(check_number)
+) -> bool:
+    cheque_data = db.get_check_by_check_number(cheque_number)
 
     # --- Check is check exist ---
-    if not check_data:
+    if not cheque_data:
         await message.answer(
-            (
-                f"Чека с идентификатором <b>{check_number}</b> не существует."
-                "\n"
-                "Возможно он был удален владельцем."
-            )
+            text=tm.message.cheque_activate_wrong_number().format(
+                cheque_number=cheque_number
+            ),
         )
-        return
+        return False
     # ---
 
     if is_new_user:
         await bind_affiliate(
             bot=message.bot,
             user_id=user_id,
-            affiliate_id=check_data["from_user_id"],
-            notify_text="По вашему чеку зарегистрировался новый пользователь.",
+            affiliate_id=cheque_data["from_user_id"],
+            notify_text=tm.message.referrals_bind_cheque(),
         )
 
     if (
-        check_data["UserActivate"] is not None
-        and str(user_id) in check_data["UserActivate"]
+        cheque_data["UserActivate"] is not None
+        and str(user_id) in cheque_data["UserActivate"]
     ):
-        await message.answer("Вы не можете активировать чек повторно!")
-        return
+        await message.answer(text=tm.message.cheque_try_reactivation())
+        return False
 
-    if check_data["quantity"] <= 0:
-        await message.answer("Этот чек уже полностью использован!")
-        return
+    if cheque_data["quantity"] <= 0:
+        await message.answer(tm.message.cheque_fully_activated())
+        return False
 
-    if user_id == check_data["from_user_id"]:
-        await message.answer("Вы не можете активировать свой же чек!")
-        return
+    if user_id == cheque_data["from_user_id"]:
+        await message.answer(tm.message.cheque_try_own_cheque())
+        return False
 
-    if check_data["typecheck"] == "personal":
+    if cheque_data["typecheck"] == "personal":
         await activate_check(
             bot=bot,
             user_id=user_id,
-            check_data=check_data,
+            cheque_data=cheque_data,
         )
-        return
+        return True
 
     subscribes_ids = (
-        check_data["id_channel"].split(",") if check_data["id_channel"] else []
+        cheque_data["id_channel"].split(",")
+        if cheque_data["id_channel"]
+        else []
     )
     is_subscribed_to_all = True
     if subscribes_ids:
         for subscribe_id in subscribes_ids:
             if subscribe_id != "":
                 try:
-                    res = await bot.get_chat_member(int(subscribe_id), user_id)
+                    res = await bot.get_chat_member(
+                        int(subscribe_id),
+                        user_id,
+                    )
                 except TelegramAPIError:
                     await message.answer(
-                        "Что-то пошло не так. Повторите попытку позже."
+                        text=tm.message.try_later(),
                     )
 
                 is_subscribed_to_all = is_subscribed_to_all and res.status in {
@@ -241,37 +245,43 @@ async def try_activate_check(
         await activate_check(
             bot=bot,
             user_id=user_id,
-            check_data=check_data,
+            cheque_data=cheque_data,
         )
-        return
+        return True
 
-    TextUrl = ""
+    subscribes_list = ""
     for subscribe in subscribes_ids:
         subscribe_url = await db.GetChannelUrl(subscribe)
-        subscribe_title = await db.GetChannelTittle(subscribe)
-        TextUrl += f'- <a href="{subscribe_url}">{subscribe_title}</a>\n'
+        subscribe_title = await db.GetChannelTitle(subscribe)
+        subscribes_list += (
+            f'🔸 <a href="{subscribe_url}">{subscribe_title}</a>\n'
+        )
 
     await bot.send_message(
         chat_id=user_id,
-        text=(
-            "<b>Вы не сможете активировать данный</b>\n"
-            "<b>чек</b>\n"
-            "\n"
-            "Этот чек доступен только для подписчиков указанных ниже каналов\n"
-            "Подпишитесь по указанным ниже ссылкам\n"
-            f"{TextUrl}\n"
+        text=tm.message.cheque_needs_subscriptions().format(
+            subscribes_list=subscribes_list
         ),
-        reply_markup=await Button.SubscribeCheck(start_command),
+        reply_markup=create_check_subscribes_keyboard(
+            cheque_number=cheque_number
+        ),
         parse_mode=ParseMode.HTML,
     )
 
+    return False
 
-@start_router.callback_query(F.data.startswith("checkSubscribe_"))
-async def ButtonCheckSubscribe(callback: CallbackQuery):
+
+@start_router.callback_query(
+    CheckSubscribesCallbackData.filter(),
+)
+async def check_subscribes_callback_handler(
+    callback: CallbackQuery,
+    callback_data: CheckSubscribesCallbackData,
+):
     await try_activate_check(
         message=callback.message,
         bot=callback.bot,
-        start_command=callback.data[15:],
+        cheque_number=callback_data.cheque_number,
         user_id=callback.from_user.id,
     )
 
@@ -300,40 +310,41 @@ async def bind_affiliate(
     try:
         await bot.send_message(
             chat_id=affiliate_id,
-            text=(
-                f"{notify_text}\n"
-                f"Ваш баланс пополнен на {config.NEW_REFERRAL_BONUS} руб."
+            text=tm.message.referrals_get_bonus().format(
+                cause_description=notify_text,
+                amount=config.NEW_REFERRAL_BONUS,
             ),
         )
     except TelegramForbiddenError:
         logger.error("User with id '%s' blocked bot.", affiliate_id)
     except TelegramNotFound:
         logger.error("User with id '%s' not found.", affiliate_id)
+    except TelegramBadRequest:
+        logger.error("Chat with id '%s' not found.", affiliate_id)
 
 
 async def activate_check(
     bot: Bot,
     user_id: int,
-    check_data: Dict[str, Any],
+    cheque_data: Dict[str, Any],
 ):
-    notify_message = (
-        "Ваш чек был активирован!"
-        if check_data["typecheck"] == "personal"
-        else "Ваша мульти-чек был активирован!"
+    notify_message = tm.message.cheque_your_cheque_activated().format(
+        cheque_type="чек"
+        if cheque_data["typecheck"] == "personal"
+        else "мульти-чек"
     )
     await bot.send_message(
-        chat_id=check_data["from_user_id"],
+        chat_id=cheque_data["from_user_id"],
         text=notify_message,
     )
 
-    db.update_user_balance(user_id, check_data["sum"])
-    await db.UpdateQuantityAndActivate(check_data["linkcheckid"], user_id)
-    await db.Add_History(user_id, check_data["sum"], "Активация чека")
+    db.update_user_balance(user_id, cheque_data["sum"])
+    await db.UpdateQuantityAndActivate(cheque_data["linkcheckid"], user_id)
+    await db.Add_History(user_id, cheque_data["sum"], "Активация чека")
 
     await bot.send_message(
         chat_id=user_id,
-        text=(
-            "Вы активировали чек!\n"
-            f"Ваш баланс пополнен на {check_data['sum']} руб."
+        text=tm.message.cheque_successfully_activated().format(
+            amount=cheque_data["sum"]
         ),
     )

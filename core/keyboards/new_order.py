@@ -13,8 +13,9 @@ from core.callback_factories.new_order import (
 )
 from core.config import config
 from core.keyboards.utils import create_pagination_buttons
+from core.text_manager import text_manager as tm
 
-from .main_menu import to_main_menu_button
+from .utils import create_to_main_menu_button
 
 
 def create_choose_category_keyboard(
@@ -30,7 +31,7 @@ def create_choose_category_keyboard(
 
     data.action = NewOrderAction.CHOOSE_SUBCATEGORY
     for category in categories:
-        builder.row(
+        builder.add(
             InlineKeyboardButton(
                 text=category["name"],
                 callback_data=data.model_copy(
@@ -42,13 +43,18 @@ def create_choose_category_keyboard(
             )
         )
 
+    builder.adjust(2)
+
     data.action = NewOrderAction.CHOOSE_CATEGORY
     pagination_buttons = create_pagination_buttons(data, has_next_page)
 
     builder.row(*pagination_buttons)
 
     builder.row(
-        to_main_menu_button,
+        InlineKeyboardButton(
+            text=tm.button.back(),
+            callback_data="main_menu",
+        ),
     )
 
     return builder.as_markup()
@@ -86,7 +92,7 @@ def create_choose_subcategory_keyboard(
 
     builder.row(
         InlineKeyboardButton(
-            text="Назад",
+            text=tm.button.back(),
             callback_data=data.model_copy(
                 update={"action": NewOrderAction.CHOOSE_CATEGORY},
             ).pack(),
@@ -133,7 +139,7 @@ def create_choose_product_keyboard(
     )
     builder.row(
         InlineKeyboardButton(
-            text="Назад",
+            text=tm.button.back(),
             callback_data=data.model_copy(
                 update={"action": prev_action},
             ).pack(),
@@ -148,7 +154,7 @@ def create_order_created_keyboard(order_id: int) -> InlineKeyboardMarkup:
 
     builder.row(
         InlineKeyboardButton(
-            text="Перейти к заказу",
+            text=tm.button.to_order(),
             callback_data=MyOrdersCallbackData(
                 action=MyOrdersAction.VIEW_ORDER,
                 order_id=order_id,
@@ -157,7 +163,7 @@ def create_order_created_keyboard(order_id: int) -> InlineKeyboardMarkup:
     )
 
     builder.row(
-        to_main_menu_button,
+        create_to_main_menu_button(),
     )
 
     return builder.as_markup()

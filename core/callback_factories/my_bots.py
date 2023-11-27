@@ -6,6 +6,7 @@ class MyBotAction(Enum):
     view_bots = "vw_bts"
     view_bot = "vw_bt"
     create_bot = "crt_bt"
+    change_token = "chng_tk"
     delete_bot = "del_bt"
     delete_confirmed = "dlt_cnfrmd"
 
