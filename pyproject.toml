@@ -1,16 +1,16 @@
 [tool.poetry]
-name = "smm-panel-telegram-bot"
+name = "smo-service-telegram-bot"
 version = "1.0.0"
-description = "SmmPanel.ru Telegram bot."
+description = "SmoService Telegram bot."
 authors = ["Dmitrii Kopeikin <kopeikindp@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "smm_panel_telegram_bot"}]
+packages = [{include = "smo_service_telegram_bot"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 aiogram = "3.0.0rc2"
-httpx = "0.25.1"
+httpx = "0.25.2"
 babel = "^2.13.1"
 jinja2 = "3.1.2"
 python-dotenv = "1.0.0"
@@ -19,9 +19,6 @@ aiocryptopay = "^0.3.2"
 validators = "0.21.2"
 aiohttp-jinja2 = "1.5.1"
 
-
-[tool.poetry.group.dev.dependencies]
-deptry = "^0.12.0"
 
 [build-system]
 requires = ["poetry-core"]
