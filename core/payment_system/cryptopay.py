@@ -97,7 +97,7 @@ class CryptoPay:
             amount=amount,
         )
 
-        return invoice.pay_url
+        return invoice.bot_invoice_url
 
 
 cryptopay = CryptoPay()

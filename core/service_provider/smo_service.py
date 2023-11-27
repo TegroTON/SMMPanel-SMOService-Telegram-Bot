@@ -96,7 +96,7 @@ class SmoServiceProvider(ServiceProvider):
         self,
         response_data: Dict[str, Any],
     ) -> Dict[int, Dict[str, Any]]:
-        if response_data["type"] == "error":
+        if "type" not in response_data or response_data["type"] == "error":
             raise ServiceParseError(
                 (
                     f"Failed to parse services for {self.name}."
