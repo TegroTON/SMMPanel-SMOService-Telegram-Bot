@@ -4,20 +4,18 @@
     <img src="static/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">Smoservice Bot</h3>
+  <h3 align="center">Promotion on social networks via Telegram bot</h3>
 
   <p align="center">
-    Система автоматизированной раскрутки и продвижения в социальных сетях❗️
+    An automated promotion system in social networks working through a Telegram bot using the API of the SmmPanel and SMOFast sites.
     <br/>
     <br/>
     <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
     <a href="https://t.me/smoservicemedia_bot">View Demo</a>
-    .
     <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues">Report Bug</a>
-    .
-    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues">Request Feature</a>
+    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/pulls">Request Feature</a>
   </p>
 </p>
 
@@ -38,7 +36,7 @@
 
 ![Screen Shot](static/main_menu.png)
 
-🚀 SmoService Bot - Ваш идеальный инструмент для продвижения в социальных сетях! Получайте больше подписчиков, просмотров и многого другого с легкостью и эффективностью.
+🚀 SMOService & RosMedia - Ваши идеальные инструменты для продвижения в социальных сетях! Получайте больше подписчиков, просмотров и многое другое с легкостью и эффективностью.
 
 Основные функции:
 
@@ -308,8 +306,9 @@ sudo systemctl status tgbot.service
 
 ## Авторы
 
--   [**m1ja**](https://github.com/m1ja) - _python developer_ - _Разработка telegram_
--   [**Kopeikin Dmitrii**](https://github.com/Dmitrii-Kopeikin) - _Python, Js developer_
+* **DeFiTON** - *CPO Telegram Bot* - [Jason Gatsby](https://github.com/DeFiTON) - *CPO*
+* **Dmitrii-Kopeikin** - *CPO Telegram Bot* - [Dmitrii Kopeikin](https://github.com/Dmitrii-Kopeikin) - *Middle DevOps Engineer*
+* **m1ja** - *Junior DevOps* - [Developer m1ja](https://github.com/m1ja) - *Junior DevOps*
 
 ## Благодарности
 

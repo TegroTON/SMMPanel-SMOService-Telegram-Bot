@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "pip" # Набор инструментов для управления пакетами Python
+    directory: "/" # Каталог, где находится файл requirements.txt
+    schedule:
+      interval: "weekly" # Интервал проверки обновлений (например, ежедневно, еженедельно)
+    open-pull-requests-limit: 10 # Максимальное количество открытых pull-requests для обновлений
+    ignore:
+      - dependency-name: "some-dependency" # Пример игнорирования конкретной зависимости
+        versions: ["2.3.4"] # Пример игнорирования конкретной версии зависимости
