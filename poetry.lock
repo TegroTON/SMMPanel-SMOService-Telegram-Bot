@@ -30,13 +30,13 @@ files = [
 
 [[package]]
 name = "aiogram"
-version = "3.0.0rc2"
+version = "3.1.1"
 description = "Modern and fully asynchronous framework for Telegram Bot API"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "aiogram-3.0.0rc2-py3-none-any.whl", hash = "sha256:9b73ef7911e873b93c012c647043cd737eaef9c79613b05bb7e663b23c388bf3"},
-    {file = "aiogram-3.0.0rc2.tar.gz", hash = "sha256:f95ac42347ae454c00771e6f8540da79cc01cd2a0fb3ff66dd9fe4ebf45cef7f"},
+    {file = "aiogram-3.1.1-py3-none-any.whl", hash = "sha256:c381cbf252bca4c8e9095f02283e44d11286c982b923407473fb2457c0dab109"},
+    {file = "aiogram-3.1.1.tar.gz", hash = "sha256:4e183d34adf28445d6c6501eb803c7b0b52fd4a09c89bd715b2df9dbd9fa8126"},
 ]
 
 [package.dependencies]
@@ -44,17 +44,18 @@ aiofiles = ">=23.1.0,<23.2.0"
 aiohttp = ">=3.8.5,<3.9.0"
 certifi = ">=2023.7.22"
 magic-filter = ">=1.0.11,<1.1.0"
-pydantic = ">=2.1.1,<3"
+pydantic = ">=2.1.1,<2.4"
+typing-extensions = ">=4.7.1,<4.8.0"
 
 [package.extras]
 cli = ["aiogram-cli (>=1.0,<2.0)"]
-dev = ["black (>=23.7.0,<23.8.0)", "isort (>=5.11,<6.0)", "mypy (>=1.4.1,<1.5.0)", "packaging (>=23.0,<24.0)", "pre-commit (>=3.3.3,<3.4.0)", "ruff (>=0.0.280,<0.1.0)", "toml (>=0.10.2,<0.11.0)", "towncrier (>=23.6.0,<23.7.0)", "typing-extensions (>=4.7.1,<4.8.0)"]
+dev = ["black (>=23.7.0,<23.8.0)", "isort (>=5.11,<6.0)", "mypy (>=1.4.1,<1.5.0)", "packaging (>=23.0,<24.0)", "pre-commit (>=3.3.3,<3.4.0)", "ruff (>=0.0.280,<0.1.0)", "toml (>=0.10.2,<0.11.0)", "towncrier (>=23.6.0,<23.7.0)"]
 docs = ["furo (>=2023.7.26,<2023.8.0)", "markdown-include (>=0.8.1,<0.9.0)", "pygments (>=2.15.1,<2.16.0)", "pymdown-extensions (>=10.1,<11.0)", "sphinx (>=7.1.1,<7.2.0)", "sphinx-autobuild (>=2021.3.14,<2021.4.0)", "sphinx-copybutton (>=0.5.2,<0.6.0)", "sphinx-intl (>=2.0.1,<2.1.0)", "sphinx-substitution-extensions (>=2022.2.16,<2022.3.0)", "sphinxcontrib-towncrier (>=0.3.2a0,<0.4.0)", "towncrier (>=23.6.0,<23.7.0)"]
 fast = ["uvloop (>=0.17.0)"]
 i18n = ["babel (>=2.12.1,<2.13.0)"]
 proxy = ["aiohttp-socks (>=0.8.0,<0.9.0)"]
 redis = ["redis (>=4.6.0,<4.7.0)"]
-test = ["aresponses (>=2.1.6,<2.2.0)", "pytest (>=7.4.0,<7.5.0)", "pytest-aiohttp (>=1.0.4,<1.1.0)", "pytest-asyncio (>=0.21.0,<0.22.0)", "pytest-cov (>=4.0.0,<4.1.0)", "pytest-html (>=3.2.0,<3.3.0)", "pytest-lazy-fixture (>=0.6.3,<0.7.0)", "pytest-mock (>=3.10.0,<3.11.0)", "pytest-mypy (>=0.10.0,<0.11.0)", "pytz (>=2022.7.1,<2022.8.0)"]
+test = ["aresponses (>=2.1.6,<2.2.0)", "pycryptodomex (>=3.18,<4.0)", "pytest (>=7.4.0,<7.5.0)", "pytest-aiohttp (>=1.0.4,<1.1.0)", "pytest-asyncio (>=0.21.0,<0.22.0)", "pytest-cov (>=4.0.0,<4.1.0)", "pytest-html (>=3.2.0,<3.3.0)", "pytest-lazy-fixture (>=0.6.3,<0.7.0)", "pytest-mock (>=3.10.0,<3.11.0)", "pytest-mypy (>=0.10.0,<0.11.0)", "pytz (>=2022.7.1,<2022.8.0)"]
 
 [[package]]
 name = "aiohttp"
@@ -282,6 +283,17 @@ files = [
 ]
 
 [[package]]
+name = "chardet"
+version = "5.2.0"
+description = "Universal encoding detector for Python 3"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "chardet-5.2.0-py3-none-any.whl", hash = "sha256:e1cf59446890a00105fe7b7912492ea04b6e6f06d4b742b2c788469e34c82970"},
+    {file = "chardet-5.2.0.tar.gz", hash = "sha256:1b3b6ff479a8c414bc3fa2c0852995695c4a026dcd6d0633b2dd092ca39c1cf7"},
+]
+
+[[package]]
 name = "charset-normalizer"
 version = "3.3.2"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
@@ -379,6 +391,48 @@ files = [
     {file = "charset_normalizer-3.3.2-cp39-cp39-win_amd64.whl", hash = "sha256:b01b88d45a6fcb69667cd6d2f7a9aeb4bf53760d7fc536bf679ec94fe9f3ff3d"},
     {file = "charset_normalizer-3.3.2-py3-none-any.whl", hash = "sha256:3e4d1f6587322d2788836a99c69062fbb091331ec940e02d12d179c1d53e25fc"},
 ]
+
+[[package]]
+name = "click"
+version = "8.1.7"
+description = "Composable command line interface toolkit"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "click-8.1.7-py3-none-any.whl", hash = "sha256:ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28"},
+    {file = "click-8.1.7.tar.gz", hash = "sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[[package]]
+name = "colorama"
+version = "0.4.6"
+description = "Cross-platform colored terminal text."
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
+files = [
+    {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
+    {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
+]
+
+[[package]]
+name = "deptry"
+version = "0.12.0"
+description = "A command line utility to check for unused, missing and transitive dependencies in a Python project."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "deptry-0.12.0-py3-none-any.whl", hash = "sha256:69c801a6ae1b39c7b8e0daf40dbe8b75f1f161277d206dd8f921f32cd22dad91"},
+    {file = "deptry-0.12.0.tar.gz", hash = "sha256:ac3cd32d149c92a9af12f63cd9486ddd1760f0277ed0cf306c6ef0388f57ff0a"},
+]
+
+[package.dependencies]
+chardet = ">=4.0.0"
+click = ">=8.0.0,<9.0.0"
+colorama = {version = ">=0.4.6", markers = "sys_platform == \"win32\""}
+pathspec = ">=0.9.0"
 
 [[package]]
 name = "frozenlist"
@@ -691,6 +745,17 @@ files = [
 ]
 
 [[package]]
+name = "pathspec"
+version = "0.11.2"
+description = "Utility library for gitignore style pattern matching of file paths."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pathspec-0.11.2-py3-none-any.whl", hash = "sha256:1d6ed233af05e679efb96b1851550ea95bbb64b7c490b0f5aa52996c11e92a20"},
+    {file = "pathspec-0.11.2.tar.gz", hash = "sha256:e0d8d0ac2f12da61956eb2306b69f9469b42f4deb0f3cb6ed47b9cce9996ced3"},
+]
+
+[[package]]
 name = "pydantic"
 version = "2.3.0"
 description = "Data validation using Python type hints"
@@ -886,34 +951,35 @@ test = ["pylint", "pytest", "pytest-black", "pytest-cov", "pytest-pylint"]
 
 [[package]]
 name = "typing-extensions"
-version = "4.8.0"
-description = "Backported and Experimental Type Hints for Python 3.8+"
+version = "4.7.1"
+description = "Backported and Experimental Type Hints for Python 3.7+"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 files = [
-    {file = "typing_extensions-4.8.0-py3-none-any.whl", hash = "sha256:8f92fc8806f9a6b641eaa5318da32b44d401efaac0f6678c9bc448ba3605faa0"},
-    {file = "typing_extensions-4.8.0.tar.gz", hash = "sha256:df8e4339e9cb77357558cbdbceca33c303714cf861d1eef15e1070055ae8b7ef"},
+    {file = "typing_extensions-4.7.1-py3-none-any.whl", hash = "sha256:440d5dd3af93b060174bf433bccd69b0babc3b15b1a8dca43789fd7f61514b36"},
+    {file = "typing_extensions-4.7.1.tar.gz", hash = "sha256:b75ddc264f0ba5615db7ba217daeb99701ad295353c45f9e95963337ceeeffb2"},
 ]
 
 [[package]]
 name = "validators"
-version = "0.21.2"
+version = "0.22.0"
 description = "Python Data Validation for Humans™"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "validators-0.21.2-py3-none-any.whl", hash = "sha256:6ad95131005a9d4c734a69dd4ef08cf66961e61222e60da25a9b5137cecd6fd4"},
-    {file = "validators-0.21.2.tar.gz", hash = "sha256:002ba1552076535176824e43149c18c06f6b611bc8b597ddbcf8770bcf5f9f5c"},
+    {file = "validators-0.22.0-py3-none-any.whl", hash = "sha256:61cf7d4a62bbae559f2e54aed3b000cea9ff3e2fdbe463f51179b92c58c9585a"},
+    {file = "validators-0.22.0.tar.gz", hash = "sha256:77b2689b172eeeb600d9605ab86194641670cdb73b60afd577142a9397873370"},
 ]
 
 [package.extras]
 docs-offline = ["myst-parser (>=2.0.0)", "pypandoc-binary (>=1.11)", "sphinx (>=7.1.1)"]
-docs-online = ["mkdocs (>=1.5.2)", "mkdocs-material (>=9.1.21)", "mkdocstrings[python] (>=0.22.0)", "pyaml (>=23.7.0)"]
+docs-online = ["mkdocs (>=1.5.2)", "mkdocs-git-revision-date-localized-plugin (>=1.2.0)", "mkdocs-material (>=9.2.6)", "mkdocstrings[python] (>=0.22.0)", "pyaml (>=23.7.0)"]
 hooks = ["pre-commit (>=3.3.3)"]
-runner = ["tox (>=4.6.4)"]
+package = ["build (>=1.0.0)", "twine (>=4.0.2)"]
+runner = ["tox (>=4.11.1)"]
 sast = ["bandit[toml] (>=1.7.5)"]
 testing = ["pytest (>=7.4.0)"]
-tooling = ["black (>=23.7.0)", "pyright (>=1.1.320)", "ruff (>=0.0.280)"]
+tooling = ["black (>=23.7.0)", "pyright (>=1.1.325)", "ruff (>=0.0.287)"]
 tooling-extras = ["pyaml (>=23.7.0)", "pypandoc-binary (>=1.11)", "pytest (>=7.4.0)"]
 
 [[package]]
@@ -1022,4 +1088,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "aee4faef0a500366c9bae7cb053d303c048080b9b3a8813d14669f3533c93576"
+content-hash = "bc706fac5d433544b4ea7dbd917f56cbc694d02b434c79da56c06e2e68a59ac2"
