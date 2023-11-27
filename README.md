@@ -93,82 +93,84 @@ pip install -r req.txt
 1.  Настройка файла .env для вашего бота
     Для корректной работы вашего бота необходимо правильно настроить файл конфигурации .env. Для этого выполните следующие действия: \* 1 Создайте копию файла .env.dist и переименуйте её в .env:
 
-            ```
-            cd /path_to_bot_directory
-            mv .env.dist .env
-            ```
-        * 2 Откройте файл .env и отредактируйте его переменные.
+    ```sh
+        cd /path_to_bot_directory
+        mv .env.dist .env
+    ```
+            
+    * 2 Откройте файл .env и отредактируйте его переменные.
 
-            ```
-            BOT_URL=  # Url ведущий на сервер вашего бота
-            HOST=127.0.0.1
-            PORT=  # Порт, который будет задействован
+    ```env
+        BOT_URL=  # Url ведущий на сервер вашего бота
+        HOST=127.0.0.1
+        PORT=  # Порт, который будет задействован
 
-            # Bot settings
-            BOT_TOKEN=  # Токен, полученный у @BotFather
-            ADMIN_ID=  # Telegram ID администратора бота
-            MAIN_BOT_PATH=  # Путь для Webhook главного бота
-            OTHER_BOTS_PATH=  # Путь для Webhook пользовательских ботов
+        # Bot settings
+        BOT_TOKEN=  # Токен, полученный у @BotFather
+        ADMIN_ID=  # Telegram ID администратора бота
+        MAIN_BOT_PATH=  # Путь для Webhook главного бота
+        OTHER_BOTS_PATH=  # Путь для Webhook пользовательских ботов
 
-            # Tegro shop (Активно)
-            TEGRO_API_URL=https://tegro.money/pay/
-            TEGRO_SHOP_ID=  # ShopID вашего магазина Tegro.money
-            TEGRO_API_KEY=  # API ключ вашего магазина
-            TEGRO_SECRET_KEY=  # Секретный ключ вашего магазина
+        # Tegro shop (Активно)
+        TEGRO_API_URL=https://tegro.money/pay/
+        TEGRO_SHOP_ID=  # ShopID вашего магазина Tegro.money
+        TEGRO_API_KEY=  # API ключ вашего магазина
+        TEGRO_SECRET_KEY=  # Секретный ключ вашего магазина
 
-            # Cryptopay (Активно)
-            CRYPTO_TOKEN=  # Токен вашего магазина CryptoPay
-            CRYPTO_TOKEN_TEST=  # Токен вашего магазина CryptoPay в сети Testnet
+        # Cryptopay (Активно)
+        CRYPTO_TOKEN=  # Токен вашего магазина CryptoPay
+        CRYPTO_TOKEN_TEST=  # Токен вашего магазина CryptoPay в сети Testnet
 
-            # Ton wallet (В разработке)
-            WPAY_STORE_API_KEY=  # Ключ вашего магазина Ton Wallet
+        # Ton wallet (В разработке)
+        WPAY_STORE_API_KEY=  # Ключ вашего магазина Ton Wallet
 
-            # Unitpay (В разработке)
-            UNITPAY_API_URL=https://unitpay.ru/api
-            UNITPAY_PROJECT_ID=  # ID вашего проекта UnitPay
-            UNITPAY_SECRET_KEY=  # Секретный ключ вашего магазина
+        # Unitpay (В разработке)
+        UNITPAY_API_URL=https://unitpay.ru/api
+        UNITPAY_PROJECT_ID=  # ID вашего проекта UnitPay
+        UNITPAY_SECRET_KEY=  # Секретный ключ вашего магазина
 
-            # Cloudpayments (В разработке)
-            CLOUDPAYMENTS_API_URL=https://api.cloudpayments.ru
-            CLOUDPAYMENTS_PUBLIC_ID=  # Cloudpayments public id
-            CLOUDPAYMENTS_SECRET_KEY=  # Cloudpayments secret key
+        # Cloudpayments (В разработке)
+        CLOUDPAYMENTS_API_URL=https://api.cloudpayments.ru
+        CLOUDPAYMENTS_PUBLIC_ID=  # Cloudpayments public id
+        CLOUDPAYMENTS_SECRET_KEY=  # Cloudpayments secret key
 
-            # SmoService
-            SMOSERVICE_KEY=  # API ключ вашего аккаунта SmoService
-            SMOSERVICE_USER_ID=  # User ID вашего аккаунта SmoService
+        # SmoService
+        SMOSERVICE_KEY=  # API ключ вашего аккаунта SmoService
+        SMOSERVICE_USER_ID=  # User ID вашего аккаунта SmoService
 
-            #SmmPanel
-            SMMPANEL_KEY=  # SmmPanel api key
+        #SmmPanel
+        SMMPANEL_KEY=  # SmmPanel api key
 
-            # Scheduled tasks intervals
-            CHECK_ORDER_STATUS_INTERVAL=120  # Интервал проверки заказов
-            AUTO_STARTING_ORDERS_INTERVAL=60  # Интервал активации новых заказов
+        # Scheduled tasks intervals
+        CHECK_ORDER_STATUS_INTERVAL=120  # Интервал проверки заказов
+        AUTO_STARTING_ORDERS_INTERVAL=60  # Интервал активации новых заказов
 
-            # WebApp links
-            HELP_URL=https://ros.media/faq  # Url для кнопки "Помощь"
-            FAQ_URL=https://smoservice.media/faq.php  # Url для кнопки "FAQ"
+        # WebApp links
+        HELP_URL=https://ros.media/faq  # Url для кнопки "Помощь"
+        FAQ_URL=https://smoservice.media/faq.php  # Url для кнопки "FAQ"
 
-            # Broadcast messages
-            BROADCAST_MESSAGES_PER_SECOND=10  # Количество сообщений в минуту при рассылке
+        # Broadcast messages
+        BROADCAST_MESSAGES_PER_SECOND=10  # Количество сообщений в минуту при рассылке
 
-            DEBUG=0  # Включение Debug-режима.
-            ```
-        * 3. Сохраните и закройте файл .env.
+        DEBUG=0  # Включение Debug-режима.
+    ```
+
+    * 3. Сохраните и закройте файл .env.
 
 **Шаг 2**
 
 2.  Получение HTTPS сертификата через Certbot
     Для обеспечения безопасности соединения с вашим сервером рекомендуется использовать HTTPS сертификат. Чтобы его получить, следуйте указаниям ниже:
 
-        * 2.1. Перейдите на официальный сайт Certbot по следующей ссылке: https://certbot.eff.org/
+    * 2.1. Перейдите на официальный сайт Certbot по следующей ссылке: https://certbot.eff.org/
 
-        * 2.2. На сайте выберите программное обеспечение (web-сервер) и систему, которые используются на вашем сервере.
+    * 2.2. На сайте выберите программное обеспечение (web-сервер) и систему, которые используются на вашем сервере.
 
-        * 2.3. Следуйте предложенной инструкции на сайте для установки и настройки Certbot. Это обычно включает в себя несколько команд, которые необходимо выполнить в вашем терминале или командной строке.
+    * 2.3. Следуйте предложенной инструкции на сайте для установки и настройки Certbot. Это обычно включает в себя несколько команд, которые необходимо выполнить в вашем терминале или командной строке.
 
-        * 2.4. После успешной настройки и получения сертификата, Certbot выведет в консоли информацию о местоположении ключей сертификата.
+    * 2.4. После успешной настройки и получения сертификата, Certbot выведет в консоли информацию о местоположении ключей сертификата.
 
-        * 2.5. Запишите или сохраните следующие пути:
+    * 2.5. Запишите или сохраните следующие пути:
 
     Путь к вашему приватному ключу (обычно privkey.pem)
     Путь к полному цепочному сертификату (обычно fullchain.pem) \* 2.6. Укажите сохраненные пути в вашем конфигурационном файле или там, где это требуется для настройки вашего сервера.
@@ -183,9 +185,9 @@ pip install -r req.txt
 
     -   3.1.1. Установите Nginx:
 
-    ```sh
-    sudo apt-get install -y nginx
-    ```
+        ```sh
+        sudo apt-get install -y nginx
+        ```
 
 -   3.1.2. Перейдите в каталог, где хранятся доступные конфигурации сайтов:
 
@@ -202,23 +204,23 @@ pip install -r req.txt
 -   3.2. Конфигурация файла
     В появившемся редакторе, впишите следующую конфигурацию:
 
-        ```sh
-        server {
-            listen 80;
-            listen 443 ssl;
-            server_name Имя_вашего_сервера_без_http_и_/;
-            ssl_certificate Путь_Который_Вы_Сохранили;
-            ssl_certificate_key Второй_Путь_Который_Вы_Сохранили;
-            location / {
-                proxy_set_header Host $http_host;
-                proxy_redirect off;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Scheme $scheme;
-                proxy_pass http://localhost:8001/;
-            }
+    ```nginx
+    server {
+        listen 80;
+        listen 443 ssl;
+        server_name Имя_вашего_сервера_без_http_и_/;
+        ssl_certificate Путь_Который_Вы_Сохранили;
+        ssl_certificate_key Второй_Путь_Который_Вы_Сохранили;
+        location / {
+            proxy_set_header Host $http_host;
+            proxy_redirect off;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Scheme $scheme;
+            proxy_pass http://localhost:8001/;
         }
-        ```
+    }
+    ```
 
 Памятка: Замените Путь*Который*Вы*Сохранили и Второй*Путь*Который*Вы_Сохранили на актуальные пути к вашим файлам сертификата, которые вы сохранили на предыдущем шаге.
 
@@ -264,18 +266,18 @@ pip install -r req.txt
 -   4.2. Конфигурация файла сервиса
     В появившемся редакторе, вставьте следующую конфигурацию:
 
-        ```sh
-        [Unit]
-        Description=Telegram Bot Service
+    ```sh
+    [Unit]
+    Description=Telegram Bot Service
 
-        [Service]
-        WorkingDirectory='путь до рабочей директории'
-        User='имя пользователя'
-        ExecStart=/usr/bin/python3 main.py
+    [Service]
+    WorkingDirectory='путь до рабочей директории'
+    User='имя пользователя'
+    ExecStart=/usr/bin/python3 main.py
 
-        [Install]
-        WantedBy=multi-user.target
-        ```
+    [Install]
+    WantedBy=multi-user.target
+    ```
 
 Памятка:
 
