@@ -10,7 +10,7 @@ packages = [{include = "smo_service_telegram_bot"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 aiogram = "3.1.1"
-httpx = "0.25.2"
+httpx = "0.26.0"
 babel = "^2.13.1"
 jinja2 = "3.1.2"
 python-dotenv = "1.0.0"
