@@ -1,217 +1,221 @@
-<br/>
+# Social Network Promotion via Telegram Bot
+
 <p align="center">
   <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot">
     <img src="static/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">Promotion on social networks via Telegram bot</h3>
+  <h3 align="center">Automated Social Network Promotion via Telegram Bot</h3>
 
   <p align="center">
-    An automated promotion system in social networks working through a Telegram bot using the API of the SmmPanel and SMOFast sites.
-    <br/>
-    <br/>
-    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot"><strong>Explore the docs »</strong></a>
-    <br/>
-    <br/>
-    <a href="https://t.me/smoservicemedia_bot">View Demo</a>
-    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues">Report Bug</a>
+    An advanced automation system for promoting social network presence, utilizing a Telegram bot interfaced with the APIs of SmmPanel and SMOFast services.
+    <br/><br/>
+    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot"><strong>Explore the Documentation »</strong></a>
+    <br/><br/>
+    <a href="https://t.me/smoservicemedia_bot">View Demo</a> · 
+    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues">Report Bug</a> · 
     <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/pulls">Request Feature</a>
   </p>
 </p>
 
-![Downloads](https://img.shields.io/github/downloads/TegroTON/SMMPanel-SMOService-Telegram-Bot/total) ![Contributors](https://img.shields.io/github/contributors/TegroTON/SMMPanel-SMOService-Telegram-Bot?color=dark-green) ![Issues](https://img.shields.io/github/issues/TegroTON/SMMPanel-SMOService-Telegram-Bot) ![License](https://img.shields.io/github/license/TegroTON/SMMPanel-SMOService-Telegram-Bot)
+![Downloads](https://img.shields.io/github/downloads/TegroTON/SMMPanel-SMOService-Telegram-Bot/total)
+![Contributors](https://img.shields.io/github/contributors/TegroTON/SMMPanel-SMOService-Telegram-Bot?color=dark-green)
+![Issues](https://img.shields.io/github/issues/TegroTON/SMMPanel-SMOService-Telegram-Bot)
+![License](https://img.shields.io/github/license/TegroTON/SMMPanel-SMOService-Telegram-Bot)
 
-## Содержание
+## Table of Contents
 
--   [О проекте](#о-проекте)
--   [Основные инструменты](#основные-инструменты)
--   [С чего начать](#с-чего-начать)
-    -   [Пререквизиты](#пререквизиты)
-    -   [Установка](#установка)
--   [Предложения и известные баги](#предложения-и-известные-баги)
--   [Авторы](#авторы)
--   [Благодарности](#благодарности)
+- [About The Project](#about-the-project)
+- [Key Features](#key-features)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation Guide](#installation-guide)
+- [Suggestions and Known Issues](#suggestions-and-known-issues)
+- [Authors](#authors)
+- [Acknowledgements](#acknowledgements)
 
-## О проекте
+## About The Project
 
 ![Screen Shot](static/main_menu.png)
 
-🚀 SMOService & RosMedia - Ваши идеальные инструменты для продвижения в социальных сетях! Получайте больше подписчиков, просмотров и многое другое с легкостью и эффективностью.
+🚀 SMOService & RosMedia - Your ideal tools for social network promotion! Gain more followers, views, and much more with ease and efficiency.
 
-Основные функции:
+### Key Features
 
--   Новый заказ: Быстро и удобно создайте заказ на накрутку нужного параметра.
--   История: Отслеживайте все свои заказы и их статус в одном месте.
--   Кошелек: Управляйте своими средствами, пополняйте баланс и оплачивайте услуги.
--   Рефералы: Приглашайте друзей и знакомых, получая вознаграждение за их активность.
--   Чеки: Поделитесь деньгами с кем-либо, используя простую ссылку для передачи.
--   Мои боты: Уникальный функционал! Создайте копию этого бота с новым ID.
+- **New Order**: Quickly and conveniently create an order for the desired promotion.
+- **History**: Track all your orders and their status in one place.
+- **Wallet**: Manage your funds, top up your balance, and pay for services.
+- **Referrals**: Invite friends and acquaintances, earning rewards for their activities.
+- **Checks**: Share funds using a simple link for transfers.
+- **My Bots**: Unique feature! Create a copy of this bot with a new ID.
 
-Присоединяйтесь к нам и делайте ваш аккаунт популярным!
+Join us and make your account popular!
 
-## Основные инструменты
+## Key Technologies
 
-Бот разработан с использованием современных технологических решений, обеспечивающих высокую производительность и стабильность работы. Использование асинхронных библиотек позволяет боту быстро и эффективно обрабатывать большое количество запросов, адаптируясь к высоким требованиям современных пользователей.
+The bot is developed using cutting-edge technological solutions, ensuring high performance and stable operation. Asynchronous libraries allow the bot to process a large number of requests quickly and efficiently, meeting the high demands of modern users.
 
--   [python 3](https://www.python.org/downloads/)
--   [aiohttp](https://docs.aiohttp.org/en/v3.8.6/web_advanced.html)
--   [aiogram](https://aiogram.dev/)
--   [sqlite](https://www.sqlite.org/index.html)
+- [Python 3](https://www.python.org/downloads/)
+- [Aiohttp](https://docs.aiohttp.org/en/v3.8.6/web_advanced.html)
+- [Aiogram](https://aiogram.dev/)
+- [SQLite](https://www.sqlite.org/index.html)
 
-## С чего начать
+## Getting Started
 
-Для успешной настройки и стабильной работы бота необходимо следовать нижеуказанным техническим требованиям:
+To set up the bot successfully and ensure stable operation, follow these technical requirements:
 
--   Сервер:
-    Хостинг: Рекомендуется использовать VPS или выделенный сервер для оптимальной производительности и надежности. Сервер должен иметь стабильное интернет-соединение и соответствующие ресурсы (CPU, RAM) в зависимости от ожидаемой нагрузки.
-    Операционная система:
-    Рекомендуются современные дистрибутивы Linux, такие как Ubuntu, CentOS или Debian. Однако большинство UNIX-подобных систем также подойдут.
-    Программное обеспечение:
-    Python 3: Убедитесь, что на сервере установлена последняя стабильная версия Python 3. Это основной язык программирования, на котором написан ваш бот.
+### Server Requirements
 
--   pip: Система управления пакетами для Python. Необходима для установки необходимых библиотек и зависимостей.
+- **Hosting**: VPS or dedicated server recommended for optimal performance and reliability. Ensure a stable internet connection and adequate resources (CPU, RAM) depending on expected load.
+- **Operating System**: Modern Linux distributions such as Ubuntu, CentOS, or Debian are recommended. Most UNIX-like systems are also suitable.
+- **Software**:
+  - **Python 3**: Ensure the latest stable version of Python 3 is installed. This is the primary programming language for the bot.
+  - **Pip**: A package management system for Python, necessary for installing required libraries and dependencies.
+  - **Note**: Before setup, ensure all software is up-to-date and all dependencies are installed.
 
--   Примечание:
-    Перед началом настройки рекомендуется проверить все установленное программное обеспечение на актуальность версий и наличие всех необходимых зависимостей.
+### Prerequisites
 
-### Пререквизиты
-
-Для автоматической установки всех необходимых библиотек, вы можете использовать файл requirements.txt с приведенным выше содержимым, выполнив команду:
+To automatically install all the required libraries, you can use the requirements.txt file with the above contents by running the command:
 
 ```sh
 pip install -r requirements.txt
 ```
+### Installation Guide
 
-Это обеспечит установку всех нужных зависимостей для надежной работы вашего бота.
+#### Step 1: Configuring the .env File for Your Bot
 
-### Установка
+To ensure your bot operates correctly, you need to properly set up the .env configuration file. Follow these steps:
 
-**Шаг 1**
-
-1.  Настройка файла .env для вашего бота
-    Для корректной работы вашего бота необходимо правильно настроить файл конфигурации .env. Для этого выполните следующие действия:
-
-    -   1 Создайте копию файла .env.dist и переименуйте её в .env:
-
+1. **Create a Copy of the .env.dist File**
+   - Make a copy of the `.env.dist` file and rename it to `.env`:
+  
         ```sh
             cd /path_to_bot_directory
             mv .env.dist .env
         ```
 
-    -   2 Откройте файл .env и отредактируйте его переменные.
+2. **Edit the .env File**
+   - Open the `.env` file and edit the variables as required.
+  
+ ```env
+BOT_URL=  # URL to your bot's server
+HOST=127.0.0.1  # Host IP (127.0.0.1 for localhost)
+PORT=  # Port to be used for the server
 
-        ```env
-            BOT_URL=  # Url ведущий на сервер вашего бота
-            HOST=127.0.0.1
-            PORT=  # Порт, который будет задействован
+# Bot Settings
+BOT_TOKEN=  # Token received from @BotFather
+ADMIN_ID=  # Telegram ID of the bot's administrator
+MAIN_BOT_PATH=  # Webhook path for the main bot
+OTHER_BOTS_PATH=  # Webhook path for user-created bots
 
-            # Bot settings
-            BOT_TOKEN=  # Токен, полученный у @BotFather
-            ADMIN_ID=  # Telegram ID администратора бота
-            MAIN_BOT_PATH=  # Путь для Webhook главного бота
-            OTHER_BOTS_PATH=  # Путь для Webhook пользовательских ботов
+# Tegro Shop Configuration (Active)
+TEGRO_API_URL=https://tegro.money/pay/  # Tegro Shop API endpoint
+TEGRO_SHOP_ID=  # Your Tegro.money shop ID
+TEGRO_API_KEY=  # API key for your Tegro.money shop
+TEGRO_SECRET_KEY=  # Secret key for your Tegro.money shop
 
-            # Tegro shop (Активно)
-            TEGRO_API_URL=https://tegro.money/pay/
-            TEGRO_SHOP_ID=  # ShopID вашего магазина Tegro.money
-            TEGRO_API_KEY=  # API ключ вашего магазина
-            TEGRO_SECRET_KEY=  # Секретный ключ вашего магазина
+# Cryptopay Configuration (Active)
+CRYPTO_TOKEN=  # Token for your Cryptopay shop
+CRYPTO_TOKEN_TEST=  # Token for your Cryptopay shop in Testnet environment
 
-            # Cryptopay (Активно)
-            CRYPTO_TOKEN=  # Токен вашего магазина CryptoPay
-            CRYPTO_TOKEN_TEST=  # Токен вашего магазина CryptoPay в сети Testnet
+# Ton Wallet Configuration (Under Development)
+WPAY_STORE_API_KEY=  # API key for your Ton Wallet store
 
-            # Ton wallet (В разработке)
-            WPAY_STORE_API_KEY=  # Ключ вашего магазина Ton Wallet
+# Unitpay Configuration (Under Development)
+UNITPAY_API_URL=https://unitpay.ru/api  # Unitpay API endpoint
+UNITPAY_PROJECT_ID=  # Project ID for your UnitPay store
+UNITPAY_SECRET_KEY=  # Secret key for your UnitPay store
 
-            # Unitpay (В разработке)
-            UNITPAY_API_URL=https://unitpay.ru/api
-            UNITPAY_PROJECT_ID=  # ID вашего проекта UnitPay
-            UNITPAY_SECRET_KEY=  # Секретный ключ вашего магазина
+# Cloudpayments Configuration (Under Development)
+CLOUDPAYMENTS_API_URL=https://api.cloudpayments.ru  # Cloudpayments API endpoint
+CLOUDPAYMENTS_PUBLIC_ID=  # Public ID for Cloudpayments
+CLOUDPAYMENTS_SECRET_KEY=  # Secret key for Cloudpayments
 
-            # Cloudpayments (В разработке)
-            CLOUDPAYMENTS_API_URL=https://api.cloudpayments.ru
-            CLOUDPAYMENTS_PUBLIC_ID=  # Cloudpayments public id
-            CLOUDPAYMENTS_SECRET_KEY=  # Cloudpayments secret key
+# SmoService Configuration
+SMOSERVICE_KEY=  # API key for your SmoService account
+SMOSERVICE_USER_ID=  # User ID for your SmoService account
 
-            # SmoService
-            SMOSERVICE_KEY=  # API ключ вашего аккаунта SmoService
-            SMOSERVICE_USER_ID=  # User ID вашего аккаунта SmoService
+# SmmPanel Configuration
+SMMPANEL_KEY=  # API key for SmmPanel
 
-            #SmmPanel
-            SMMPANEL_KEY=  # SmmPanel api key
+# Scheduled Tasks Intervals
+CHECK_ORDER_STATUS_INTERVAL=120  # Interval (in seconds) to check order status
+AUTO_STARTING_ORDERS_INTERVAL=60  # Interval (in seconds) to activate new orders
 
-            # Scheduled tasks intervals
-            CHECK_ORDER_STATUS_INTERVAL=120  # Интервал проверки заказов
-            AUTO_STARTING_ORDERS_INTERVAL=60  # Интервал активации новых заказов
+# WebApp Links
+HELP_URL=https://ros.media/faq  # URL for "Help" button
+FAQ_URL=https://smoservice.media/faq.php  # URL for "FAQ"
 
-            # WebApp links
-            HELP_URL=https://ros.media/faq  # Url для кнопки "Помощь"
-            FAQ_URL=https://smoservice.media/faq.php  # Url для кнопки "FAQ"
+# Broadcast Messages Configuration
+BROADCAST_MESSAGES_PER_SECOND=10 # Number of broadcast messages sent per minute
 
-            # Broadcast messages
-            BROADCAST_MESSAGES_PER_SECOND=10  # Количество сообщений в минуту при рассылке
+# Debug Mode
+DEBUG=0 # Set to 1 to enable debug mode
+ ```
+   - Save and close the `.env` file after making the necessary changes.
 
-            DEBUG=0  # Включение Debug-режима.
-        ```
+#### Step 2: Obtaining an HTTPS Certificate Through Certbot
 
-    -   3. Сохраните и закройте файл .env.
+For secure communication with your server, it's recommended to use an HTTPS certificate. To obtain one, proceed as follows:
 
-**Шаг 2**
+1. **Visit Certbot's Official Website**
+   - Go to [Certbot's official website](https://certbot.eff.org/).
 
-2.  Получение HTTPS сертификата через Certbot
-    Для обеспечения безопасности соединения с вашим сервером рекомендуется использовать HTTPS сертификат. Чтобы его получить, следуйте указаниям ниже:
+2. **Select Your Web Server and Operating System**
+   - On the website, select the web server software and operating system you are using on your server.
 
-    -   2.1. Перейдите на официальный сайт Certbot по следующей ссылке: https://certbot.eff.org/
+3. **Follow the Installation Instructions**
+   - Adhere to the guided instructions provided on the site for installing and setting up Certbot. This typically involves executing several commands in your terminal or command line.
 
-    -   2.2. На сайте выберите программное обеспечение (web-сервер) и систему, которые используются на вашем сервере.
+4. **Certificate Key Location**
+   - After successful setup and acquisition of the certificate, Certbot will display information about the location of the certificate keys in the console.
+   - Take note or save the following paths:
+     - Path to your private key (usually `privkey.pem`)
+     - Path to the full chain certificate (usually `fullchain.pem`)
 
-    -   2.3. Следуйте предложенной инструкции на сайте для установки и настройки Certbot. Это обычно включает в себя несколько команд, которые необходимо выполнить в вашем терминале или командной строке.
+5. **Specify the Saved Paths in Your Configuration File**
+   - Input the saved paths in your configuration file or wherever necessary for setting up your server.
 
-    -   2.4. После успешной настройки и получения сертификата, Certbot выведет в консоли информацию о местоположении ключей сертификата.
+⚠️ **Important Security Note**: Never share your private keys. Ensure they have appropriate access rights to be inaccessible to everyone except necessary services and the administrator.
 
-    -   2.5. Запишите или сохраните следующие пути:
-        Путь к вашему приватному ключу (обычно privkey.pem)
-        Путь к полному цепочному сертификату (обычно fullchain.pem)
+### Step 3: Configuring Nginx for Your Telegram Bot
 
-    -   2.6. Укажите сохраненные пути в вашем конфигурационном файле или там, где это требуется для настройки вашего сервера.
+Proper configuration of the Nginx web server is crucial for your Telegram bot to handle requests effectively. Follow these detailed steps for setup:
 
-    🚫 Никогда не делитесь приватными ключами и убедитесь, что у них соответствующие права доступа, чтобы они были недоступны для всех, кроме необходимых служб и администратора.
+#### 3.1 Installation and Basic Configuration of Nginx
 
-**Шаг 3**
-Настройка Nginx для работы с вашим ботом
-Для того чтобы ваш Telegram бот мог корректно обрабатывать запросы, необходимо настроить web-сервер Nginx. Следуйте инструкциям ниже:
-
--   3.1. Установка и исходная настройка Nginx
-
-    -   3.1.1. Установите Nginx:
-
-        ```sh
+1. **Install Nginx**: 
+   - Execute the command to install Nginx on your server.
+  
+     ```sh
         sudo apt-get install -y nginx
-        ```
+     ```
 
-    -   3.1.2. Перейдите в каталог, где хранятся доступные конфигурации сайтов:
-
-        ```sh
+2. **Navigate to the Sites-Available Directory**:
+   - Change to the directory where Nginx site configurations are stored.
+  
+     ```sh
         cd /etc/nginx/sites-available/
-        ```
+     ```
 
-    -   3.1.3. Создайте и откройте новый конфигурационный файл:
-
-        ```sh
+3. **Create and Edit a New Configuration File**:
+   - Use a command to create and open a new configuration file for your bot.
+  
+     ```sh
         sudo nano telegram_bot.conf
-        ```
+     ```
 
--   3.2. Конфигурация файла
-    В появившемся редакторе, впишите следующую конфигурацию, заменив пути к сертификату и ключу на ранее сохраненные и изменив имя вашего сервера:
+#### 3.2 Configuring the File
+
+- In the opened editor, input the Nginx configuration. Be sure to replace paths to your SSL certificate and key with the ones obtained earlier and modify the server name to match your server's hostname.
 
     ```nginx
     server {
         listen 80;
         listen 443 ssl;
-        server_name "доменное имя вашего сервера";
-        ssl_certificate "путь к сертификату";
-        ssl_certificate_key "путь к ключу сертификата";
+        server_name "your_server_domain_name";
+        ssl_certificate "path_to_certificate";
+        ssl_certificate_key "path_to_certificate_key";
         location / {
             proxy_set_header Host $http_host;
             proxy_redirect off;
@@ -221,97 +225,113 @@ pip install -r requirements.txt
             proxy_pass http://localhost:8001/;
         }
     }
-    ```
+     ```
+  
+- Save and close the file after editing.
 
-Сохраните и закройте файл.
+#### 3.3 Activating and Restarting Nginx
 
--   3.3. Активация и перезапуск Nginx
+1. **Navigate to the Active Configurations Directory**:
+   - Move to the directory where active Nginx configurations are stored.
 
-    -   3.3.1. Перейдите в каталог с активными конфигурациями:
-
-        ```sh
+  ```sh
         cd /etc/nginx/sites-enabled/
-        ```
+  ```
 
--   3.3.2. Создайте символическую ссылку на ваш конфигурационный файл:
-
-    ```sh
+2. **Create a Symbolic Link to Your Configuration File**:
+   - Use a command to create a symbolic link from your configuration file in 'sites-available' to 'sites-enabled'.
+  
+   ```sh
     sudo ln -s ../sites-available/telegram_bot.conf telegram_bot.conf
-    ```
+   ```
 
--   3.3.3. Перезапустите Nginx для применения изменений:
-
-    ```sh
+3. **Restart Nginx to Apply Changes**:
+   - Execute a command to restart Nginx, making your configuration changes effective.
+  
+   ```sh
     sudo service nginx restart
-    ```
+   ```
 
-**Шаг 4**
-Для того чтобы ваш бот всегда был в рабочем состоянии и автоматически запускался после перезагрузки сервера или внезапных отключений, создайте сервис, используя systemd.
+### Step 4: Creating a Systemd Service for Your Bot
 
--   4.1. Создание конфигурационного файла сервиса
+To ensure your bot remains operational at all times and automatically restarts after server reboots or unexpected shutdowns, create a systemd service.
 
-    -   4.1.1. Перейдите в каталог systemd, где хранятся конфигурационные файлы сервисов:
+#### 4.1 Creating the Service Configuration File
 
-        ```sh
+1. **Navigate to the Systemd Directory**:
+   - Change to the systemd directory where service configuration files are stored. Typically, it's `/etc/systemd/system/`.
+  
+   ```sh
         cd /etc/systemd/system/
-        ```
+   ```
 
--   4.1.2. Создайте и откройте новый файл для вашего сервиса:
-
+2. **Create and Open a New Service File**:
+   - Execute a command to create and open a new file for your service. For example, you might use `sudo nano /etc/systemd/system/your_bot.service`.
+  
     ```sh
     vim tgbot.service
     ```
 
--   4.2. Конфигурация файла сервиса
-    В появившемся редакторе, вставьте следующую конфигурацию, изменив путь и имя пользователя на свои:
+#### 4.2 Configuring the Service File
+
+- In the editor, input the following configuration. Remember to replace the executable path and username with your specific details:
 
     ```sh
     [Unit]
     Description=Telegram Bot Service
 
     [Service]
-    WorkingDirectory='путь до рабочей директории'
-    User='имя пользователя'
+    WorkingDirectory='working directory path'
+    User='user name'
     ExecStart=/usr/bin/python3 main.py
 
     [Install]
     WantedBy=multi-user.target
-    ```
+    ```    
 
--   4.3. Активация и запуск сервиса
+#### 4.3 Activating and Starting the Service
 
-    -   4.3.1. Для того чтобы активировать и автоматически запускать сервис при загрузке системы, используйте следующую команду:
+- Activate and Enable Automatic Start:
 
-    ```sh
+Use the command sudo systemctl enable your_bot.service to enable the service to start on boot.
+
+  ```sh
     sudo systemctl enable tgbot.service
-    ```
+  ```
 
--   4.3.2. Чтобы запустить вашего бота прямо сейчас с помощью созданного сервиса, используйте:
+- Start Your Bot Using the Created Service:
 
-    ```sh
+To start your bot immediately using the service, execute: sudo systemctl start your_bot.service.
+
+  ```sh
     sudo systemctl start tgbot.service
-    ```
+  ```
 
-Проверьте статус вашего бота с помощью команды:
+Check the Status of Your Bot:
 
 ```sh
 sudo systemctl status tgbot.service
 ```
+To verify that your bot is running correctly, use the command: sudo systemctl status your_bot.service.
 
-Это позволит вам удостовериться, что ваш бот успешно запущен и работает корректно.
+## Suggestions and Known Issues
 
-## Предложения и известные баги
+For a list of proposed features and known issues, please see the ["Issues"](https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues) section on GitHub.
 
-Список предлагаемых функций (и известных проблем) см. в разделе ["Открытые вопросы"](https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues).
+## Authors
 
-## Авторы
+- **DeFiTON**: Chief Product Officer (CPO) of the Telegram Bot
+  - [Jason Gatsby](https://github.com/DeFiTON): Renowned for his strategic vision and expertise in product development.
+- **Dmitrii-Kopeikin**: Key Contributor as a Middle DevOps Engineer
+  - [Dmitrii Kopeikin](https://github.com/Dmitrii-Kopeikin): A proficient and innovative DevOps Engineer, bringing
+- **m1ja**: An aspiring Junior DevOps Developer
+  - [Developer m1ja](https://github.com/m1ja): Committed to learning and growing in the field, showcasing promising talents in DevOps.
 
-* **DeFiTON** - *CPO Telegram Bot* - [Jason Gatsby](https://github.com/DeFiTON) - *CPO*
-* **Dmitrii-Kopeikin** - *CPO Telegram Bot* - [Dmitrii Kopeikin](https://github.com/Dmitrii-Kopeikin) - *Middle DevOps Engineer*
-* **m1ja** - *Junior DevOps* - [Developer m1ja](https://github.com/m1ja) - *Junior DevOps*
+## Acknowledgements
 
-## Благодарности
+Special thanks to the following contributors and resources for their invaluable support and contributions to the project:
 
--   [ShaanCoding](https://github.com/ShaanCoding/)
--   [Othneil Drew](https://github.com/othneildrew/Best-README-Template)
--   [ImgShields](https://shields.io/)
+- [ShaanCoding](https://github.com/ShaanCoding/): For insightful contributions and guidance.
+- [Othneil Drew](https://github.com/othneildrew/Best-README-Template): For providing an excellent README template that greatly enhanced this project's documentation.
+- [ImgShields](https://shields.io/): For offering a versatile tool to create badges and visual indicators, adding a professional touch to the project's presentation.
+
