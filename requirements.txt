@@ -1,4 +1,4 @@
-aiocryptopay==0.3.3 ; python_version >= "3.11" and python_version < "4.0"
+aiocryptopay==0.4.8 ; python_version >= "3.11" and python_version < "4.0"
 aiofiles==23.1.0 ; python_version >= "3.11" and python_version < "4.0"
 aiogram==3.0.0rc2 ; python_version >= "3.11" and python_version < "4.0"
 aiohttp-jinja2==1.5.1 ; python_version >= "3.11" and python_version < "4.0"
