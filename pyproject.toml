@@ -11,7 +11,7 @@ packages = [{include = "smo_service_telegram_bot"}]
 python = "^3.11"
 aiogram = "3.1.1"
 httpx = "0.25.2"
-babel = "^2.13.1"
+babel = "^2.14.0"
 jinja2 = "3.1.2"
 python-dotenv = "1.0.0"
 aiohttp = "3.8.6"
