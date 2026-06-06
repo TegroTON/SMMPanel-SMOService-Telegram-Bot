@@ -335,3 +335,8 @@ Special thanks to the following contributors and resources for their invaluable 
 - [Othneil Drew](https://github.com/othneildrew/Best-README-Template): For providing an excellent README template that greatly enhanced this project's documentation.
 - [ImgShields](https://shields.io/): For offering a versatile tool to create badges and visual indicators, adding a professional touch to the project's presentation.
 
+## 🌐 Project & Ecosystem
+
+- 🌐 **SMOService** — https://smoservice.net
+- 🤖 **Live bot** — https://t.me/smoservicemedia_bot
+- 🏠 **Open-source org** — https://github.com/TegroTON
