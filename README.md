@@ -1,7 +1,7 @@
 # Social Network Promotion via Telegram Bot
 
 <p align="center">
-  <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot">
+  <a href="https://github.com/SMOService/SMMPanel-SMOService-Telegram-Bot">
     <img src="static/logo.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -10,18 +10,18 @@
   <p align="center">
     An advanced automation system for promoting social network presence, utilizing a Telegram bot interfaced with the APIs of SmmPanel and SMOFast services.
     <br/><br/>
-    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot"><strong>Explore the Documentation »</strong></a>
+    <a href="https://github.com/SMOService/SMMPanel-SMOService-Telegram-Bot"><strong>Explore the Documentation »</strong></a>
     <br/><br/>
     <a href="https://t.me/smoservicemedia_bot">View Demo</a> · 
-    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues">Report Bug</a> · 
-    <a href="https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/pulls">Request Feature</a>
+    <a href="https://github.com/SMOService/SMMPanel-SMOService-Telegram-Bot/issues">Report Bug</a> · 
+    <a href="https://github.com/SMOService/SMMPanel-SMOService-Telegram-Bot/pulls">Request Feature</a>
   </p>
 </p>
 
-![Downloads](https://img.shields.io/github/downloads/TegroTON/SMMPanel-SMOService-Telegram-Bot/total)
-![Contributors](https://img.shields.io/github/contributors/TegroTON/SMMPanel-SMOService-Telegram-Bot?color=dark-green)
-![Issues](https://img.shields.io/github/issues/TegroTON/SMMPanel-SMOService-Telegram-Bot)
-![License](https://img.shields.io/github/license/TegroTON/SMMPanel-SMOService-Telegram-Bot)
+![Downloads](https://img.shields.io/github/downloads/SMOService/SMMPanel-SMOService-Telegram-Bot/total)
+![Contributors](https://img.shields.io/github/contributors/SMOService/SMMPanel-SMOService-Telegram-Bot?color=dark-green)
+![Issues](https://img.shields.io/github/issues/SMOService/SMMPanel-SMOService-Telegram-Bot)
+![License](https://img.shields.io/github/license/SMOService/SMMPanel-SMOService-Telegram-Bot)
 
 ## Table of Contents
 
@@ -316,12 +316,10 @@ To verify that your bot is running correctly, use the command: sudo systemctl st
 
 ## Suggestions and Known Issues
 
-For a list of proposed features and known issues, please see the ["Issues"](https://github.com/TegroTON/SMMPanel-SMOService-Telegram-Bot/issues) section on GitHub.
+For a list of proposed features and known issues, please see the ["Issues"](https://github.com/SMOService/SMMPanel-SMOService-Telegram-Bot/issues) section on GitHub.
 
 ## Authors
 
-- **DeFiTON**: Chief Product Officer (CPO) of the Telegram Bot
-  - [Jason Gatsby](https://github.com/DeFiTON): Renowned for his strategic vision and expertise in product development.
 - **Dmitrii-Kopeikin**: Key Contributor as a Middle DevOps Engineer
   - [Dmitrii Kopeikin](https://github.com/Dmitrii-Kopeikin): A proficient and innovative DevOps Engineer, bringing
 - **m1ja**: An aspiring Junior DevOps Developer
@@ -339,4 +337,4 @@ Special thanks to the following contributors and resources for their invaluable 
 
 - 🌐 **SMOService** — https://smoservice.net
 - 🤖 **Live bot** — https://t.me/smoservicemedia_bot
-- 🏠 **Open-source org** — https://github.com/TegroTON
+- 🏠 **Open-source org** — https://github.com/SMOService

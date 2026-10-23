@@ -2,7 +2,7 @@
 name = "smo-service-telegram-bot"
 version = "1.0.0"
 description = "SmoService Telegram bot."
-authors = ["Dmitrii Kopeikin <kopeikindp@gmail.com>"]
+authors = ["SMOService"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "smo_service_telegram_bot"}]
